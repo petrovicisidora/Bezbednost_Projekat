@@ -37,6 +37,7 @@ public class User extends AbstractEntity {
     private Role role;
 
 
+
     public User(@NotNull String email, @NotNull String password, @NotNull String firstName, @NotNull String lastName) {
         this.password = password;
         this.email = email;
