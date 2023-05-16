@@ -1,6 +1,5 @@
 import React from 'react'
 import TablePage from "../../../common/TablePage";
-import { deleteUser, getUsers, restoreUser } from "../../../services/admin/UserAdminService";
 import { bindActionCreators } from "redux";
 import * as Actions from "../../../actions/Actions";
 import { withRouter } from "react-router-dom";

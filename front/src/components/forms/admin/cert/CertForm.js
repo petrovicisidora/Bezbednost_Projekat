@@ -1,10 +1,8 @@
 import React,{ useState, useEffect } from 'react';
 import strings from "../../../../localization";
-import {  getUsers } from "../../../services/admin/UserAdminService";
 import { getError, hasError } from "../../../../functions/Validation";
 import { Button, TextField } from "@material-ui/core";
 import Select from 'react-select'
-import { deleteUser, getUsers, restoreUser } from "../../../services/admin/UserAdminService";
  
 
 

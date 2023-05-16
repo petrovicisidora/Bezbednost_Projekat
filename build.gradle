@@ -18,7 +18,7 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'com.main'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -42,7 +42,12 @@ dependencies {
     compile('org.glassfish.jaxb:jaxb-runtime:2.3.0')
     compileOnly 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.springframework.security:spring-security-test')
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+
 }
+targetCompatibility = JavaVersion.VERSION_11

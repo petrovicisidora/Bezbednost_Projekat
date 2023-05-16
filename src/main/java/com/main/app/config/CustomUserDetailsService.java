@@ -1,6 +1,8 @@
 package com.main.app.config;
 
+import com.main.app.domain.model.Korisnik;
 import com.main.app.domain.model.User;
+import com.main.app.repository.KorisnikRepository;
 import com.main.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,10 +18,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private KorisnikRepository korisnikRepository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Optional<User> user = userRepository.findOneByEmail(username);
+        Optional<Korisnik> user = korisnikRepository.findByEmail(username);
         org.springframework.security.core.userdetails.User.UserBuilder builder = null;
 
         if (!user.isPresent()) {
