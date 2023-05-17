@@ -8,5 +8,5 @@ import com.main.app.domain.tokens.TokenResponse;
 public interface KorisnikService {
 
         Korisnik registerKorisnik(KorisnikDto korisnikDto);
-        TokenResponse login(LoginRequest loginRequest);
+        boolean login(LoginRequest loginRequest);
 }
