@@ -38,6 +38,16 @@ INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `a
     ('1', 'test1@gmail.com', 'sjvh', 'akdbh', 'ekbh', 'efw', 'efw', 'fesef','03151',
      'fekwh');
 
+CREATE TABLE `projekat` (
+         `id` bigint(20) NOT NULL AUTO_INCREMENT,
+         `name` varchar(255) NOT NULL,
+         `duration` varchar(255) NOT NULL,
+         `job_description` varchar(255) NOT NULL,
+         PRIMARY KEY (`id`)
+     );
+
+INSERT INTO `projekat` (`id`, `name`, `duration`, `job_description`) VALUES ('1', 'Projekat', '12months', 'Web app');
+
 
 CREATE TABLE `cert` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

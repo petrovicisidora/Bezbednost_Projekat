@@ -8,9 +8,11 @@ import com.main.app.domain.tokens.TokenResponse;
 import com.main.app.repository.KorisnikRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,6 +36,34 @@ public class KorisnikServiceImpl implements KorisnikService {
         this.passwordEncoder = passwordEncoder;
         this.salt = BCrypt.gensalt();
     }
+
+    @Override
+    public List<Korisnik> getAllKorisnici() {
+        return korisnikRepository.findAll();
+    }
+
+    @Override
+    public Korisnik editKorisnik(Long korisnikId, KorisnikDto korisnikDto) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findById(korisnikId);
+        if (korisnikOptional.isEmpty()) {
+            throw new RuntimeException("Korisnik sa datim ID-em ne postoji.");
+        }
+
+        Korisnik korisnik = korisnikOptional.get();
+
+        // email i sifra se ne menjaju
+        korisnik.setFirstName(korisnikDto.getFirstName());
+        korisnik.setLastName(korisnikDto.getLastName());
+        korisnik.setAddress(korisnikDto.getAddress());
+        korisnik.setCity(korisnikDto.getCity());
+        korisnik.setState(korisnikDto.getState());
+        korisnik.setPhoneNumber(korisnikDto.getPhoneNumber());
+        korisnik.setJobTitle(korisnikDto.getJobTitle());
+
+        // Čuvanje izmenjenog korisnika u bazi
+        return korisnikRepository.save(korisnik);
+    }
+
 
     @Override
     public Korisnik registerKorisnik(KorisnikDto korisnikDto) {
@@ -67,6 +97,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         return korisnikRepository.save(korisnik);
     }
 
+    @Override
     public TokenResponse login(LoginRequest loginRequest) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(loginRequest.getEmail());
         if (korisnikOptional.isEmpty()) {
@@ -74,16 +105,16 @@ public class KorisnikServiceImpl implements KorisnikService {
         }
 
         Korisnik korisnik = korisnikOptional.get();
-        String enteredPassword = loginRequest.getPassword();
-        String hashedPasswordWithSalt = korisnik.getPassword();
+        String hashedPassword = korisnik.getPassword();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        // Provera podudaranosti lozinke
-        if (!matchPassword(enteredPassword, hashedPasswordWithSalt)) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), hashedPassword)) {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
         String accessToken = tokenProvider.generateAccessToken(korisnik);
         String refreshToken = tokenProvider.generateRefreshToken(korisnik);
+
         return new TokenResponse(accessToken, refreshToken);
     }
 
