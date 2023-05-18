@@ -11,7 +11,7 @@ public class KorisnikDto {
     private String city;
     private String state;
     private String phoneNumber;
-    private Roles jobTitle;
+    private String jobTitle;
 
     public KorisnikDto() {}
 
@@ -81,11 +81,11 @@ public class KorisnikDto {
         this.phoneNumber = phoneNumber;
     }
 
-    public Roles getJobTitle() {
+    public String getJobTitle() {
         return jobTitle;
     }
 
-    public void setJobTitle(Roles jobTitle) {
+    public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
     }
 }

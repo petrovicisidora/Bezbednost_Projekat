@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -14,7 +16,6 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-
 @Table(name = "korisnik")
 public class Korisnik implements Serializable {
 
@@ -22,34 +23,31 @@ public class Korisnik implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(name = "email", unique = true)
     private String email;
 
-    @Column
+    @Column(name = "password")
     private String password;
 
-    @Column
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column
+    @Column(name = "address")
     private String address;
 
-    @Column
+    @Column(name = "city")
     private String city;
 
-    @Column
+    @Column(name = "state")
     private String state;
 
-    @Column
+    @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column
-    private Roles jobTitle;
-
-    @OneToMany(mappedBy = "worker", fetch = FetchType.LAZY)
-    private List<EmployeeInProject> projects;
+    @Column(name = "job_title")
+    private String jobTitle;
 
 }

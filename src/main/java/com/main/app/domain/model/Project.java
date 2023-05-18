@@ -19,13 +19,13 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(name = "name")
     private String name;
 
-    @Column
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    @Column
+    @Column(name = "end_date")
     private LocalDate endDate;
 
 

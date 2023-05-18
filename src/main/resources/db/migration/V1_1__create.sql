@@ -37,18 +37,18 @@ CREATE TABLE `korisnik` (
 INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`) VALUES
 
     ('1', 'test1@gmail.com', 'sjvh', 'akdbh', 'ekbh', 'efw', 'efw', 'fesef','03151',
-     'INZENEJR');
+     'ADMIN');
 
 CREATE TABLE `projekat` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
-    `startDate` date NOT NULL,
-    `endDate` date NOT NULL,
+    `start_date` date NOT NULL,
+    `end_date` date NOT NULL,
     PRIMARY KEY (`id`)
 );
 
 
-INSERT INTO `projekat` (`id`, `name`, `startDate`, `endDate`) VALUES ('1', 'Projekat', '2023-01-01', '2023-06-01');
+INSERT INTO `projekat` (`id`, `name`, `start_date`, `end_date`) VALUES ('1', 'Projekat', '2023-01-01', '2023-06-01');
 
 
 CREATE TABLE `employee_in_project` (
@@ -64,9 +64,8 @@ CREATE TABLE `employee_in_project` (
 );
 
 INSERT INTO employee_in_project (worker_id, project_id, job_description, job_start_time, job_end_time)
-VALUES (1, 1, 'Opis posla 1', '2023-01-01', '2023-12-31'),
-       (1, 1, 'Opis posla 2', '2023-02-01', '2023-12-31'),
-       (1, 1, 'Opis posla 3', '2023-03-01', '2023-06-30');
+VALUES (1, 1, 'Opis posla 1', '2023-01-01', '2023-12-31');
+
 
 
 CREATE TABLE `cert` (
