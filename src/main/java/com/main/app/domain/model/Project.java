@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -22,12 +23,10 @@ public class Project {
     private String name;
 
     @Column
-    private String duration;
+    private LocalDate startDate;
 
     @Column
-    private String jobDescription;
+    private LocalDate endDate;
 
-    //@ManyToOne
-    //@JoinColumn(name = "engineer_id")
-    //private Korisnik engineer;
+
 }

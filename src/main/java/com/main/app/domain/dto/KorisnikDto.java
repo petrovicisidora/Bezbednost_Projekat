@@ -1,5 +1,7 @@
 package com.main.app.domain.dto;
 
+import com.main.app.enums.Roles;
+
 public class KorisnikDto {
     private String email;
     private String password;
@@ -9,7 +11,7 @@ public class KorisnikDto {
     private String city;
     private String state;
     private String phoneNumber;
-    private String jobTitle;
+    private Roles jobTitle;
 
     public KorisnikDto() {}
 
@@ -79,11 +81,11 @@ public class KorisnikDto {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getJobTitle() {
+    public Roles getJobTitle() {
         return jobTitle;
     }
 
-    public void setJobTitle(String jobTitle) {
+    public void setJobTitle(Roles jobTitle) {
         this.jobTitle = jobTitle;
     }
 }

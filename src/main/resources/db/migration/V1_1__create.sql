@@ -21,32 +21,52 @@ INSERT INTO `user` (`id`, `email`, `password`, `first_name`, `last_name`, `role`
 '2011-11-11 00:00:00');
 
 CREATE TABLE `korisnik` (
-                      `id` bigint(20) NOT NULL AUTO_INCREMENT,
-                      `email` varchar(255) NOT NULL,
-                      `password` varchar(255) NOT NULL,
-                      `first_name` varchar(255) NOT NULL,
-                      `last_name` varchar(255) NOT NULL,
-                      `address` varchar(255) NOT NULL,
-                      `city` varchar(255) NOT NULL,
-                      `state` varchar(255) NOT NULL,
-                      `phone_number` varchar(255) NOT NULL,
-                      `job_title` varchar(255) NOT NULL,
-                      PRIMARY KEY (`id`)
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `email` varchar(255) NOT NULL,
+    `password` varchar(255) NOT NULL,
+    `first_name` varchar(255) NOT NULL,
+    `last_name` varchar(255) NOT NULL,
+    `address` varchar(255) NOT NULL,
+    `city` varchar(255) NOT NULL,
+    `state` varchar(255) NOT NULL,
+    `phone_number` varchar(255) NOT NULL,
+    `job_title` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
 );
+
 INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`) VALUES
 
     ('1', 'test1@gmail.com', 'sjvh', 'akdbh', 'ekbh', 'efw', 'efw', 'fesef','03151',
-     'fekwh');
+     'INZENEJR');
 
 CREATE TABLE `projekat` (
-         `id` bigint(20) NOT NULL AUTO_INCREMENT,
-         `name` varchar(255) NOT NULL,
-         `duration` varchar(255) NOT NULL,
-         `job_description` varchar(255) NOT NULL,
-         PRIMARY KEY (`id`)
-     );
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `startDate` date NOT NULL,
+    `endDate` date NOT NULL,
+    PRIMARY KEY (`id`)
+);
 
-INSERT INTO `projekat` (`id`, `name`, `duration`, `job_description`) VALUES ('1', 'Projekat', '12months', 'Web app');
+
+INSERT INTO `projekat` (`id`, `name`, `startDate`, `endDate`) VALUES ('1', 'Projekat', '2023-01-01', '2023-06-01');
+
+
+CREATE TABLE `employee_in_project` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `worker_id` bigint(20) NOT NULL,
+    `project_id` bigint(20) NOT NULL,
+    `job_description` varchar(255) DEFAULT NULL,
+    `job_start_time` date DEFAULT NULL,
+    `job_end_time` date DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_worker_id` FOREIGN KEY (`worker_id`) REFERENCES `korisnik` (`id`),
+    CONSTRAINT `fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projekat` (`id`)
+);
+
+INSERT INTO employee_in_project (worker_id, project_id, job_description, job_start_time, job_end_time)
+VALUES (1, 1, 'Opis posla 1', '2023-01-01', '2023-12-31'),
+       (1, 1, 'Opis posla 2', '2023-02-01', '2023-12-31'),
+       (1, 1, 'Opis posla 3', '2023-03-01', '2023-06-30');
 
 
 CREATE TABLE `cert` (

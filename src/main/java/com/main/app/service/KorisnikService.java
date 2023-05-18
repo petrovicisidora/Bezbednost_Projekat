@@ -13,5 +13,5 @@ public interface KorisnikService {
         List<Korisnik> getAllKorisnici();
         Korisnik editKorisnik(Long korisnikId, KorisnikDto korisnikDto);
         Korisnik registerKorisnik(KorisnikDto korisnikDto);
-        TokenResponse login(LoginRequest loginRequest);
+        boolean login(LoginRequest loginRequest);
 }

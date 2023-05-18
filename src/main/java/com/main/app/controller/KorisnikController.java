@@ -44,9 +44,16 @@ public class KorisnikController {
     }
 
 
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
-        TokenResponse tokenResponse = korisnikService.login(loginRequest);
-        return ResponseEntity.ok(tokenResponse);
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+        boolean isAuthenticated = korisnikService.login(loginRequest);
+
+        if (isAuthenticated) {
+            // Korisnik je uspešno prijavljen
+            return ResponseEntity.ok("Uspešna prijava");
+        } else {
+            // Pogrešni pristupni podaci
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Neuspešna prijava");
+        }
     }
 }

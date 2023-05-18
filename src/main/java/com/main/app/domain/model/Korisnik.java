@@ -1,16 +1,20 @@
 package com.main.app.domain.model;
 
+import com.main.app.enums.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+
 @Table(name = "korisnik")
 public class Korisnik implements Serializable {
 
@@ -43,10 +47,9 @@ public class Korisnik implements Serializable {
     private String phoneNumber;
 
     @Column
-    private String jobTitle;
+    private Roles jobTitle;
 
-    //@ManyToOne
-    //@JoinColumn(name = "project_id")
-    //private Project project;
-    
+    @OneToMany(mappedBy = "worker", fetch = FetchType.LAZY)
+    private List<EmployeeInProject> projects;
+
 }

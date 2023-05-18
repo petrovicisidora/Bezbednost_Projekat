@@ -37,16 +37,16 @@ public class ProjectServiceImpl implements ProjectService{
     private ProjectDto mapProjectToProjectDto(Project project) {
         ProjectDto projectDto = new ProjectDto();
         projectDto.setName(project.getName());
-        projectDto.setDuration(project.getDuration());
-        projectDto.setJobDescription(project.getJobDescription());
+        projectDto.setStartDate(project.getStartDate());
+        projectDto.setEndDate(project.getEndDate());
         return projectDto;
     }
 
     private Project mapProjectDtoToProject(ProjectDto projectDto) {
         Project project = new Project();
         project.setName(projectDto.getName());
-        project.setDuration(projectDto.getDuration());
-        project.setJobDescription(projectDto.getJobDescription());
+        project.setStartDate(projectDto.getStartDate());
+        project.setEndDate(projectDto.getEndDate());
         return project;
     }
 }

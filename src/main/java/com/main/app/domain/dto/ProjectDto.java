@@ -1,10 +1,12 @@
 package com.main.app.domain.dto;
 
+import java.time.LocalDate;
+
 public class ProjectDto {
 
     private String name;
-    private String duration;
-    private String jobDescription;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
 
     public ProjectDto(){}
@@ -17,19 +19,19 @@ public class ProjectDto {
         this.name = name;
     }
 
-    public String getDuration() {
-        return duration;
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    public void setDuration(String duration) {
-        this.duration = duration;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
-    public String getJobDescription() {
-        return jobDescription;
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 }

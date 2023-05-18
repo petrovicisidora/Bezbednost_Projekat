@@ -27,14 +27,14 @@ public class KorisnikServiceImpl implements KorisnikService {
     @Autowired
     private TokenProvider tokenProvider;
 
-    private final String salt;
+    private final String salt = BCrypt.gensalt();
 
     @Autowired
     public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
-        this.salt = BCrypt.gensalt();
+        //this.salt = BCrypt.gensalt();
     }
 
     @Override
@@ -71,20 +71,12 @@ public class KorisnikServiceImpl implements KorisnikService {
         if (existingUser.isPresent()) {
             throw new RuntimeException("Korisnik sa datom email adresom već postoji.");
         }
-
-        // validacija korisničkog unosa
-
-        // kombinovanje lozinke i salt-a i hash-ovanje rezultata
-        String combinedPassword = korisnikDto.getPassword() + salt;
-        String hashedPassword = passwordEncoder.encode(combinedPassword);
-
-        // Dodajte so u hashovanu lozinku
-        String hashedPasswordWithSalt = hashedPassword + salt;
+        String sifra = passwordEncoder.encode(korisnikDto.getPassword()) + salt;
 
         // kreiranje novog korisnika
         Korisnik korisnik = new Korisnik();
         korisnik.setEmail(korisnikDto.getEmail());
-        korisnik.setPassword(hashedPasswordWithSalt);
+        korisnik.setPassword(sifra);
         korisnik.setFirstName(korisnikDto.getFirstName());
         korisnik.setLastName(korisnikDto.getLastName());
         korisnik.setAddress(korisnikDto.getAddress());
@@ -97,34 +89,18 @@ public class KorisnikServiceImpl implements KorisnikService {
         return korisnikRepository.save(korisnik);
     }
 
+
     @Override
-    public TokenResponse login(LoginRequest loginRequest) {
+    public boolean login(LoginRequest loginRequest) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(loginRequest.getEmail());
-        if (korisnikOptional.isEmpty()) {
-            throw new IllegalArgumentException("Invalid email or password");
+        String sifra = passwordEncoder.encode(loginRequest.getPassword()) + salt;
+        if (korisnikOptional != null) {
+            if (sifra == korisnikOptional.get().getPassword()) {
+                return true;
+            }
+            return false;
         }
 
-        Korisnik korisnik = korisnikOptional.get();
-        String hashedPassword = korisnik.getPassword();
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-        if (!passwordEncoder.matches(loginRequest.getPassword(), hashedPassword)) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-
-        String accessToken = tokenProvider.generateAccessToken(korisnik);
-        String refreshToken = tokenProvider.generateRefreshToken(korisnik);
-
-        return new TokenResponse(accessToken, refreshToken);
+        return false;
     }
-
-    private boolean matchPassword(String enteredPassword, String hashedPasswordWithSalt) {
-        // Provera podudaranosti lozinke
-        String combinedPassword = enteredPassword + salt;
-        String hashedEnteredPassword = passwordEncoder.encode(combinedPassword);
-        return hashedEnteredPassword.equals(hashedPasswordWithSalt);
-    }
-
-
-
 }
