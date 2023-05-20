@@ -12,4 +12,7 @@ import java.util.List;
 public class EmployeeInProjectDto {
     private List<Long> employeeId;
     private Long projectId;
+    private String jobDescription;
+    private ProjectDto project;
+    private String employeeFullName;
 }

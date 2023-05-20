@@ -56,4 +56,14 @@ public class KorisnikController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Neuspešna prijava");
         }
     }
+
+    @GetMapping("/getUserNameAndSurname/{userId}")
+    public String getUserNameAndSurname(@PathVariable Long userId) {
+        return korisnikService.getUserNameAndSurname(userId);
+    }
+
+    @GetMapping("/getAllUserNamesAndSurnames")
+    public List<String> getAllUserNamesAndSurnames() {
+        return korisnikService.getAllUserNamesAndSurnames();
+    }
 }

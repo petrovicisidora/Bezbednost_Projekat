@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,6 +65,32 @@ public class KorisnikServiceImpl implements KorisnikService {
         return korisnikRepository.save(korisnik);
     }
 
+    @Override
+    public String getUserNameAndSurname(Long userId) {
+        Optional<Korisnik> korisnik = korisnikRepository.findById(userId);
+
+        if (korisnik != null) {
+            // Dobavljanje imena i prezimena korisnika
+            String fullName = korisnik.get().getFirstName() + " " + korisnik.get().getLastName();
+            return fullName;
+        } else {
+            return "";
+        }
+    }
+
+    @Override
+    public List<String> getAllUserNamesAndSurnames() {
+        List<Korisnik> korisnici = korisnikRepository.findAll();
+        List<String> userNamesAndSurnames = new ArrayList<>();
+
+        for (Korisnik korisnik : korisnici) {
+            String fullName = korisnik.getFirstName() + " " + korisnik.getLastName();
+            userNamesAndSurnames.add(fullName);
+        }
+
+        return userNamesAndSurnames;
+    }
+
 
     @Override
     public Korisnik registerKorisnik(KorisnikDto korisnikDto) {
@@ -87,6 +114,11 @@ public class KorisnikServiceImpl implements KorisnikService {
 
         // čuvanje korisnika u bazi i vraćanje sa generisanim ID-em
         return korisnikRepository.save(korisnik);
+    }
+
+    @Override
+    public Optional<Korisnik> getKorisnikById(Long id) {
+        return korisnikRepository.findById(id);
     }
 
 

@@ -7,6 +7,7 @@ import com.main.app.domain.tokens.LoginRequest;
 import com.main.app.domain.tokens.TokenResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface KorisnikService {
 
@@ -14,4 +15,8 @@ public interface KorisnikService {
         Korisnik editKorisnik(Long korisnikId, KorisnikDto korisnikDto);
         Korisnik registerKorisnik(KorisnikDto korisnikDto);
         boolean login(LoginRequest loginRequest);
+        Optional<Korisnik> getKorisnikById(Long id);
+        String getUserNameAndSurname(Long userId);
+        List<String> getAllUserNamesAndSurnames();
+
 }

@@ -50,4 +50,10 @@ public class Korisnik implements Serializable {
     @Column(name = "job_title")
     private String jobTitle;
 
+    @Column(name = "java")
+    private int java;
+
+    @Column(name = "python")
+    private int python;
+
 }
