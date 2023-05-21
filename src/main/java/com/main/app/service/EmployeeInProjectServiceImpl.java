@@ -77,6 +77,7 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             // Retrieve the project details and set them in the DTO
             Project project = employeeInProject.getProject();
             ProjectDto projectDto = new ProjectDto();
+            projectDto.setId(project.getId());
             projectDto.setName(project.getName());
             projectDto.setStartDate(project.getStartDate());
             projectDto.setEndDate(project.getEndDate());
@@ -87,6 +88,44 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
 
         return employeeInProjectDtos;
     }
+
+    @Override
+    public List<EmployeeInProjectDto> getEmployeesInProject(Long projectId) {
+        List<EmployeeInProject> employeesInProject = employeeInProjectRepository.findByProjectId(projectId);
+        List<EmployeeInProjectDto> employeeInProjectDtos = new ArrayList<>();
+
+        for (EmployeeInProject employeeInProject : employeesInProject) {
+            EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
+            employeeInProjectDto.setEmployeeId(Collections.singletonList(employeeInProject.getWorker().getId()));
+            employeeInProjectDto.setProjectId(employeeInProject.getProject().getId());
+            employeeInProjectDto.setJobDescription(employeeInProject.getJobDescription());
+            employeeInProjectDto.setProject(convertToProjectDto(employeeInProject.getProject()));
+            employeeInProjectDto.setEmployeeFullName(getEmployeeFullName(employeeInProject.getWorker().getId()));
+            employeeInProjectDtos.add(employeeInProjectDto);
+        }
+
+        return employeeInProjectDtos;
+    }
+
+    private ProjectDto convertToProjectDto(Project project) {
+        ProjectDto projectDto = new ProjectDto();
+        projectDto.setId(project.getId());
+        projectDto.setName(project.getName());
+        projectDto.setStartDate(project.getStartDate());
+        projectDto.setEndDate(project.getEndDate());
+        return projectDto;
+    }
+
+    private String getEmployeeFullName(Long employeeId) {
+        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikById(employeeId);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return korisnik.getFirstName() + " " + korisnik.getLastName();
+        } else {
+            return "";
+        }
+    }
+
 
 
 

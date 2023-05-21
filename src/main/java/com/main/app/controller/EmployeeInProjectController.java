@@ -44,4 +44,11 @@ public class EmployeeInProjectController {
         List<EmployeeInProjectDto> employeesInProjects = employeeInProjectService.getAllEmployeesInProjects();
         return ResponseEntity.ok(employeesInProjects);
     }
+
+    @GetMapping("/employeesInProject/{projectId}")
+    public ResponseEntity<List<EmployeeInProjectDto>> getEmployeesInProject(@PathVariable Long projectId) {
+        List<EmployeeInProjectDto> employeesInProject = employeeInProjectService.getEmployeesInProject(projectId);
+        return ResponseEntity.ok(employeesInProject);
+    }
+
 }

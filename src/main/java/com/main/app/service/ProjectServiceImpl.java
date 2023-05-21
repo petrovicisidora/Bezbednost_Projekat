@@ -6,6 +6,7 @@ import com.main.app.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ public class ProjectServiceImpl implements ProjectService{
 
     private ProjectDto mapProjectToProjectDto(Project project) {
         ProjectDto projectDto = new ProjectDto();
+        projectDto.setId(project.getId());
         projectDto.setName(project.getName());
         projectDto.setStartDate(project.getStartDate());
         projectDto.setEndDate(project.getEndDate());
@@ -49,4 +51,31 @@ public class ProjectServiceImpl implements ProjectService{
         project.setEndDate(projectDto.getEndDate());
         return project;
     }
+
+    @Override
+    public ProjectDto getProjectByName(String projectName) {
+        Project project = projectRepository.findByName(projectName);
+        if (project != null) {
+            return mapProjectToProjectDto(project);
+        } else {
+            throw new EntityNotFoundException("Project not found");
+        }
+    }
+
+
+    @Override
+    public ProjectDto getProjectById(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+
+        ProjectDto projectDto = new ProjectDto();
+        projectDto.setId(project.getId());
+        projectDto.setName(project.getName());
+        projectDto.setStartDate(project.getStartDate());
+        projectDto.setEndDate(project.getEndDate());
+        // Mapirajte ostale atribute projekta na projektDto
+
+        return projectDto;
+    }
+
 }

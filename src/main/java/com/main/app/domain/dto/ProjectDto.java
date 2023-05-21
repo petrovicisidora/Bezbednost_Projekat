@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class ProjectDto {
 
+    private Long id;
     private String name;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -33,5 +34,13 @@ public class ProjectDto {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

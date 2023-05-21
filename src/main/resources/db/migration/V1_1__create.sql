@@ -38,7 +38,7 @@ CREATE TABLE `korisnik` (
 
 INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `java`,  `python` ) VALUES
 
-    ('1', 'test1@gmail.com', 'sjvh', 'akdbh', 'ekbh', 'efw', 'efw', 'fesef','03151',
+    ('1', 'admin@gmail.com', '123', 'Admin', 'Admin', 'Admin', 'Admin', 'fesef','111',
      'ADMIN', '0', '0');
 
 CREATE TABLE `projekat` (
@@ -50,7 +50,7 @@ CREATE TABLE `projekat` (
 );
 
 
-INSERT INTO `projekat` (`id`, `name`, `start_date`, `end_date`) VALUES ('1', 'Projekat', '2023-01-01', '2023-06-01');
+INSERT INTO `projekat` (`id`, `name`, `start_date`, `end_date`) VALUES ('1', 'Java Project', '2023-01-01', '2023-06-01');
 
 
 CREATE TABLE `employee_in_project` (

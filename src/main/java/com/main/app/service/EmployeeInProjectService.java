@@ -13,6 +13,6 @@ public interface EmployeeInProjectService {
 
     void addEmployeesToProject(EmployeeInProjectDto employeeInProjectDto);
     Optional<Korisnik> getKorisnikById(Long employeeId);
-
+    List<EmployeeInProjectDto> getEmployeesInProject(Long projectId);
     List<EmployeeInProjectDto> getAllEmployeesInProjects();
 }
