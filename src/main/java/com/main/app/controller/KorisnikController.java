@@ -45,17 +45,16 @@ public class KorisnikController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        boolean isAuthenticated = korisnikService.login(loginRequest);
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
+        TokenResponse tokenResponse = korisnikService.loginAndGetTokens(loginRequest);
 
-        if (isAuthenticated) {
-            // Korisnik je uspešno prijavljen
-            return ResponseEntity.ok("Uspešna prijava");
+        if (tokenResponse != null) {
+            return ResponseEntity.ok(tokenResponse);
         } else {
-            // Pogrešni pristupni podaci
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Neuspešna prijava");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
 
     @GetMapping("/getUserNameAndSurname/{userId}")
     public String getUserNameAndSurname(@PathVariable Long userId) {

@@ -36,7 +36,7 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(customUserDetailsService).passwordEncoder(encoder());
     }
 
-
+//
     @Autowired
     private UserDetailsService userDetailsService;
 

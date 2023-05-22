@@ -8,7 +8,6 @@ import com.main.app.domain.tokens.TokenResponse;
 import com.main.app.repository.KorisnikRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +27,11 @@ public class KorisnikServiceImpl implements KorisnikService {
     @Autowired
     private TokenProvider tokenProvider;
 
-    private final String salt = BCrypt.gensalt();
-
     @Autowired
     public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
-        //this.salt = BCrypt.gensalt();
     }
 
     @Override
@@ -98,7 +94,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         if (existingUser.isPresent()) {
             throw new RuntimeException("Korisnik sa datom email adresom već postoji.");
         }
-        String sifra = passwordEncoder.encode(korisnikDto.getPassword()) + salt;
+        String sifra = passwordEncoder.encode(korisnikDto.getPassword());
 
         // kreiranje novog korisnika
         Korisnik korisnik = new Korisnik();
@@ -123,16 +119,23 @@ public class KorisnikServiceImpl implements KorisnikService {
 
 
     @Override
-    public boolean login(LoginRequest loginRequest) {
+    public TokenResponse loginAndGetTokens(LoginRequest loginRequest) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(loginRequest.getEmail());
-        String sifra = passwordEncoder.encode(loginRequest.getPassword()) + salt;
-        if (korisnikOptional != null) {
-            if (sifra == korisnikOptional.get().getPassword()) {
-                return true;
+
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+
+            if (BCrypt.checkpw(loginRequest.getPassword(), korisnik.getPassword())) {
+                // Kreiranje access tokena
+                String accessToken = tokenProvider.generateAccessToken(korisnik);
+                // Kreiranje refresh tokena
+                String refreshToken = tokenProvider.generateRefreshToken(korisnik);
+
+                return new TokenResponse(accessToken, refreshToken);
             }
-            return false;
         }
 
-        return false;
+        return null;
     }
+
 }
