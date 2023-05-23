@@ -90,6 +90,32 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
     }
 
     @Override
+    public List<ProjectDto> getProjectsByEmployee(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikByEmail(email);
+        if (korisnikOptional.isPresent()) {
+            List<EmployeeInProject> employeeInProjects = employeeInProjectRepository.findByWorkerId(korisnikOptional.get().getId());
+            List<ProjectDto> projects = new ArrayList<>();
+
+            for (EmployeeInProject employeeInProject : employeeInProjects) {
+                ProjectDto projectDto = convertToProjectDto(employeeInProject.getProject());
+                EmployeeInProjectDto employeeInProjectDto = convertToEmployeeInProjectDto(employeeInProject);
+                employeeInProjectDto.setProject(projectDto);  // Set projectDto in employeeInProjectDto
+                projects.add(projectDto);
+            }
+
+            return projects;
+        } else {
+            throw new EntityNotFoundException("Korisnik nije pronađen!");
+        }
+    }
+
+    private EmployeeInProjectDto convertToEmployeeInProjectDto(EmployeeInProject employeeInProject) {
+        EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
+        employeeInProjectDto.setJobDescription(employeeInProject.getJobDescription());
+        return employeeInProjectDto;
+    }
+
+    @Override
     public List<EmployeeInProjectDto> getEmployeesInProject(Long projectId) {
         List<EmployeeInProject> employeesInProject = employeeInProjectRepository.findByProjectId(projectId);
         List<EmployeeInProjectDto> employeeInProjectDtos = new ArrayList<>();

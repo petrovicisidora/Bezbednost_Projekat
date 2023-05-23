@@ -1,6 +1,7 @@
 package com.main.app.controller;
 
 import com.main.app.domain.dto.EmployeeInProjectDto;
+import com.main.app.domain.dto.ProjectDto;
 import com.main.app.domain.model.Korisnik;
 import com.main.app.service.EmployeeInProjectService;
 import com.main.app.service.KorisnikService;
@@ -51,4 +52,9 @@ public class EmployeeInProjectController {
         return ResponseEntity.ok(employeesInProject);
     }
 
+    @GetMapping("/getProjectsFromEmployee/{email}")
+    public ResponseEntity<List<ProjectDto>> getProjectsByEmployee(@PathVariable String email) {
+        List<ProjectDto> projects = employeeInProjectService.getProjectsByEmployee(email);
+        return ResponseEntity.ok(projects);
+    }
 }

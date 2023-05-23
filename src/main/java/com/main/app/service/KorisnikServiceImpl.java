@@ -40,8 +40,8 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
     @Override
-    public Korisnik editKorisnik(Long korisnikId, KorisnikDto korisnikDto) {
-        Optional<Korisnik> korisnikOptional = korisnikRepository.findById(korisnikId);
+    public Korisnik editKorisnik(String email, KorisnikDto korisnikDto) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
         if (korisnikOptional.isEmpty()) {
             throw new RuntimeException("Korisnik sa datim ID-em ne postoji.");
         }

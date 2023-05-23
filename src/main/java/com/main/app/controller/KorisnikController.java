@@ -39,9 +39,9 @@ public class KorisnikController {
         return new ResponseEntity<>(korisnici, HttpStatus.OK);
     }
 
-    @PutMapping("/edit/{id}")
-    public ResponseEntity<Korisnik> editKorisnik(@PathVariable("id") Long korisnikId, @RequestBody KorisnikDto korisnikDto) {
-        Korisnik editedKorisnik = korisnikService.editKorisnik(korisnikId, korisnikDto);
+    @PutMapping("/edit/{email}")
+    public ResponseEntity<Korisnik> editKorisnik(@PathVariable("email") String email, @RequestBody KorisnikDto korisnikDto) {
+        Korisnik editedKorisnik = korisnikService.editKorisnik(email, korisnikDto);
         return ResponseEntity.ok(editedKorisnik);
     }
 
