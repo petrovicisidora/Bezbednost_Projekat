@@ -19,4 +19,5 @@ public interface KorisnikService {
         String getUserNameAndSurname(Long userId);
         List<String> getAllUserNamesAndSurnames();
 
+        Optional<Korisnik> getKorisnikByEmail(String email);
 }

@@ -138,4 +138,10 @@ public class KorisnikServiceImpl implements KorisnikService {
         return null;
     }
 
+    @Override
+    public Optional<Korisnik> getKorisnikByEmail(String email) {
+        return korisnikRepository.findByEmail(email);
+    }
+
 }
+

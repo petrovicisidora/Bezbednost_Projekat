@@ -9,4 +9,8 @@ import java.util.Optional;
 public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
     Optional<Korisnik> findByEmail(String email);
     List<Korisnik> findAll();
+
+    void deleteByEmail(String userEmail);
+
+    void deleteRefreshTokenByEmail(String userEmail);
 }

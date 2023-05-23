@@ -3,21 +3,30 @@ package com.main.app.controller;
 import com.main.app.domain.dto.KorisnikDto;
 import com.main.app.domain.model.Korisnik;
 import com.main.app.domain.tokens.LoginRequest;
+import com.main.app.domain.tokens.TokenProvider;
 import com.main.app.domain.tokens.TokenResponse;
+import com.main.app.repository.KorisnikRepository;
 import com.main.app.service.KorisnikService;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/korisnik")
 public class KorisnikController {
 
     private KorisnikService korisnikService;
+    private KorisnikRepository korisnikRepository;
+    private TokenProvider tokenProvider;
 
     @Autowired
     public KorisnikController(KorisnikService korisnikService) {
@@ -55,7 +64,6 @@ public class KorisnikController {
         }
     }
 
-
     @GetMapping("/getUserNameAndSurname/{userId}")
     public String getUserNameAndSurname(@PathVariable Long userId) {
         return korisnikService.getUserNameAndSurname(userId);
@@ -65,4 +73,39 @@ public class KorisnikController {
     public List<String> getAllUserNamesAndSurnames() {
         return korisnikService.getAllUserNamesAndSurnames();
     }
+
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<Korisnik> getKorisnikById(@PathVariable("id") Long id) {
+        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikById(id);
+
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return ResponseEntity.ok(korisnik);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/getByEmail/{email}")
+    public ResponseEntity<Korisnik> getKorisnikByEmail(@PathVariable("email") String email) {
+        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikByEmail(email);
+
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return ResponseEntity.ok(korisnik);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+
+        String userEmail = request.getUserPrincipal().getName();
+        korisnikRepository.deleteRefreshTokenByEmail(userEmail);
+        return ResponseEntity.ok("Successfully logged out.");
+    }
+
+
+
 }

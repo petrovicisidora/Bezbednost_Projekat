@@ -56,4 +56,5 @@ public class Korisnik implements Serializable {
     @Column(name = "python")
     private int python;
 
+
 }
