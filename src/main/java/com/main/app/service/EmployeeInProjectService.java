@@ -17,4 +17,9 @@ public interface EmployeeInProjectService {
     List<EmployeeInProjectDto> getEmployeesInProject(Long projectId);
     List<EmployeeInProjectDto> getAllEmployeesInProjects();
     public List<ProjectDto> getProjectsByEmployee(String email);
+
+    void updateJobDescription(Long employeeInProjectId, String newJobDescription);
+
+    Optional<EmployeeInProject> getEmployeeInProjectById(Long employeeInProjectId);
+
 }

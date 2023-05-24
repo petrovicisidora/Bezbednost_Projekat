@@ -2,6 +2,7 @@ package com.main.app.controller;
 
 import com.main.app.domain.dto.EmployeeInProjectDto;
 import com.main.app.domain.dto.ProjectDto;
+import com.main.app.domain.model.EmployeeInProject;
 import com.main.app.domain.model.Korisnik;
 import com.main.app.service.EmployeeInProjectService;
 import com.main.app.service.KorisnikService;
@@ -57,4 +58,31 @@ public class EmployeeInProjectController {
         List<ProjectDto> projects = employeeInProjectService.getProjectsByEmployee(email);
         return ResponseEntity.ok(projects);
     }
+
+    @PutMapping("/updateJobDescription/{employeeInProjectId}")
+    public ResponseEntity<Void> updateJobDescription(@PathVariable Long employeeInProjectId, @RequestBody UpdateJobDescriptionRequest request) {
+        String newJobDescription = request.getNewJobDescription();
+        employeeInProjectService.updateJobDescription(employeeInProjectId, newJobDescription);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getById/{employeeInProjectId}")
+    public ResponseEntity<EmployeeInProject> getEmployeeInProjectById(@PathVariable("employeeInProjectId") Long employeeInProjectId) {
+        Optional<EmployeeInProject> employeeInProjectOptional = employeeInProjectService.getEmployeeInProjectById(employeeInProjectId);
+
+        if (employeeInProjectOptional.isPresent()) {
+            EmployeeInProject employeeInProject = employeeInProjectOptional.get();
+            return ResponseEntity.ok(employeeInProject);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private EmployeeInProjectDto convertToEmployeeInProjectDto(EmployeeInProject employeeInProject) {
+        EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
+        employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
+        // Postavite ostale vrednosti iz employeeInProject u employeeInProjectDto prema potrebi
+        return employeeInProjectDto;
+    }
+
 }

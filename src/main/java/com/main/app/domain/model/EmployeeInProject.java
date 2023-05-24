@@ -29,7 +29,7 @@ public class EmployeeInProject {
     @JsonIgnore
     private Project project;
 
-    private String jobDescription;
+    private String job_description;
 
     private LocalDate jobStartTime;
 
