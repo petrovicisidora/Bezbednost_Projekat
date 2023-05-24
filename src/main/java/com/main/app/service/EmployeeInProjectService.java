@@ -22,4 +22,5 @@ public interface EmployeeInProjectService {
 
     Optional<EmployeeInProject> getEmployeeInProjectById(Long employeeInProjectId);
 
+    Long getEmployeeInProjectIdByProjectIdAndWorkerId(Long projectId, Long workerId);
 }

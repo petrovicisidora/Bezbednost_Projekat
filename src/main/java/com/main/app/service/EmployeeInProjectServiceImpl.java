@@ -177,6 +177,11 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
         return employeeInProjectRepository.findById(employeeInProjectId);
     }
 
+    @Override
+    public Long getEmployeeInProjectIdByProjectIdAndWorkerId(Long projectId, Long workerId) {
+        return employeeInProjectRepository.findEmployeeInProjectIdByProjectIdAndWorkerId(projectId, workerId);
+    }
+
 
 
 

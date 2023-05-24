@@ -85,4 +85,17 @@ public class EmployeeInProjectController {
         return employeeInProjectDto;
     }
 
+    @GetMapping("/getEmployeeInProjectId/{projectId}/{workerId}")
+    public ResponseEntity<Long> getEmployeeInProjectIdByProjectIdAndWorkerId(
+            @PathVariable("projectId") Long projectId,
+            @PathVariable("workerId") Long workerId) {
+        Long employeeInProjectId = employeeInProjectService.getEmployeeInProjectIdByProjectIdAndWorkerId(projectId, workerId);
+        if (employeeInProjectId != null) {
+            return ResponseEntity.ok(employeeInProjectId);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
 }

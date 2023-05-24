@@ -143,5 +143,14 @@ public class KorisnikServiceImpl implements KorisnikService {
         return korisnikRepository.findByEmail(email);
     }
 
+    @Override
+    public Long getUserIdByEmail(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return korisnik.getId();
+        }
+        return null;
+    }
 }
 
