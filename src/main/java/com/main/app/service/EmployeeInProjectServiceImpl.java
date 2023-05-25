@@ -138,6 +138,7 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
             employeeInProjectDto.setProject(convertToProjectDto(employeeInProject.getProject()));
             employeeInProjectDto.setEmployeeFullName(getEmployeeFullName(employeeInProject.getWorker().getId()));
+            employeeInProjectDto.setJobTitle(employeeInProject.getWorker().getJobTitle());
             employeeInProjectDtos.add(employeeInProjectDto);
         }
 

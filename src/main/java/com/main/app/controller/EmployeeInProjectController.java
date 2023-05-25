@@ -55,6 +55,7 @@ public class EmployeeInProjectController {
 
     @GetMapping("/getProjectsFromEmployee/{email}")
     public ResponseEntity<List<ProjectDto>> getProjectsByEmployee(@PathVariable String email) {
+
         List<ProjectDto> projects = employeeInProjectService.getProjectsByEmployee(email);
         return ResponseEntity.ok(projects);
     }
