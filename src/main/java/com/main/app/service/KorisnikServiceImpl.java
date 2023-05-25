@@ -87,6 +87,18 @@ public class KorisnikServiceImpl implements KorisnikService {
         return userNamesAndSurnames;
     }
 
+    @Override
+    public String getJobTitleByEmail(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
+
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            // Vratite ulogu korisnika
+            return korisnik.getJobTitle();
+        }
+        return null;
+    }
+
 
     @Override
     public Korisnik registerKorisnik(KorisnikDto korisnikDto) {

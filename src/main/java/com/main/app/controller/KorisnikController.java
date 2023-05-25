@@ -21,12 +21,15 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/korisnik")
 public class KorisnikController {
 
     private KorisnikService korisnikService;
     private KorisnikRepository korisnikRepository;
+    @Autowired
     private TokenProvider tokenProvider;
+
 
     @Autowired
     public KorisnikController(KorisnikService korisnikService) {
@@ -104,6 +107,31 @@ public class KorisnikController {
         String userEmail = request.getUserPrincipal().getName();
         korisnikRepository.deleteRefreshTokenByEmail(userEmail);
         return ResponseEntity.ok("Successfully logged out.");
+    }
+
+//    @GetMapping("/getJobTitle/{email}")
+//    public ResponseEntity<String> getJobTitleByEmail(@PathVariable("email") String email) {
+//        String jobTitle = korisnikService.getJobTitleByEmail(email);
+//
+//        if (jobTitle != null) {
+//            return ResponseEntity.ok(jobTitle);
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+
+    @GetMapping("/getJobTitle/{userEmail}")
+    public ResponseEntity<String> getJobTitle(@PathVariable String userEmail, @RequestHeader("Authorization") String authorizationHeader) {
+        System.out.println("Authorization header: " + authorizationHeader);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+
+            if (tokenProvider.validateToken(token)) {
+                String jobTitle = korisnikService.getJobTitleByEmail(userEmail);
+                return ResponseEntity.ok(jobTitle);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
     }
 
 

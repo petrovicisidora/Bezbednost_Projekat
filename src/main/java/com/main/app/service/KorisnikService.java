@@ -18,6 +18,6 @@ public interface KorisnikService {
         Optional<Korisnik> getKorisnikById(Long id);
         String getUserNameAndSurname(Long userId);
         List<String> getAllUserNamesAndSurnames();
-
+        String getJobTitleByEmail(String email);
         Optional<Korisnik> getKorisnikByEmail(String email);
 }
