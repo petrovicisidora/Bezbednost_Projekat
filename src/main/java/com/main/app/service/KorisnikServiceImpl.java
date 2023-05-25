@@ -152,5 +152,15 @@ public class KorisnikServiceImpl implements KorisnikService {
         }
         return null;
     }
+
+    @Override
+    public String getJobTitleByEmail(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return korisnik.getJobTitle();
+        }
+        return null;
+    }
 }
 

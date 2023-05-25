@@ -116,6 +116,14 @@ public class KorisnikController {
         }
     }
 
-
+    @GetMapping("/getJobTitleByEmail/{email}")
+    public ResponseEntity<String> getJobTitleByEmail(@PathVariable("email") String email) {
+        String jobTitle = korisnikService.getJobTitleByEmail(email);
+        if (jobTitle != null) {
+            return ResponseEntity.ok(jobTitle);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }
