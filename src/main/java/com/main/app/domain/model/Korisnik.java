@@ -10,6 +10,7 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -50,11 +51,8 @@ public class Korisnik implements Serializable {
     @Column(name = "job_title")
     private String jobTitle;
 
-    @Column(name = "java")
-    private int java;
 
-    @Column(name = "python")
-    private int python;
+
 
 
 }

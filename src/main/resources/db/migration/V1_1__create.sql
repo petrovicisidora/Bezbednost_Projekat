@@ -31,15 +31,13 @@ CREATE TABLE `korisnik` (
     `state` varchar(255) NOT NULL,
     `phone_number` varchar(255) NOT NULL,
     `job_title` varchar(255) NOT NULL,
-    `java` varchar(255),
-    `python` varchar(255),
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `java`,  `python` ) VALUES
+INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title` ) VALUES
 
     ('1', 'admin@gmail.com', '123', 'Admin', 'Admin', 'Admin', 'Admin', 'fesef','111',
-     'ADMIN', '0', '0');
+     'ADMIN');
 
 CREATE TABLE `projekat` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -68,6 +66,52 @@ CREATE TABLE `employee_in_project` (
 INSERT INTO employee_in_project (worker_id, project_id, job_description, job_start_time, job_end_time)
 VALUES (1, 1, 'Opis posla 1', '2023-01-01', '2023-12-31');
 
+CREATE TABLE `skill` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `level` int NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+INSERT INTO `skill` (`id`, `name`, `level`) VALUES
+    ('1', 'Java', '3'),
+    ('2', 'Python', '4'),
+    ('3', 'SQL', '2');
+
+CREATE TABLE `korisnik_skills` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `korisnik_id` bigint(20) NOT NULL,
+      `skill_id` bigint(20) NOT NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_korisnik_id` FOREIGN KEY (`korisnik_id`) REFERENCES `korisnik` (`id`),
+      CONSTRAINT `fk_skill_id` FOREIGN KEY (`skill_id`) REFERENCES `skill` (`id`)
+);
+
+INSERT INTO `korisnik_skills` (`id`, `korisnik_id`, `skill_id`) VALUES
+    ('1', '1', '1');
+
+CREATE TABLE `document` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `doc` longblob NOT NULL,
+     PRIMARY KEY (`id`)
+);
+
+INSERT INTO `document` (`id`, `name`, `doc`)
+VALUES ('1', 'Naziv dokumenta 1', 'Sadržaj dokumenta 1');
+
+
+CREATE TABLE `korisnik_document` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `korisnik_id` bigint(20) NOT NULL,
+      `document_id` bigint(20) NOT NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_korisnik_document_korisnik` FOREIGN KEY (`korisnik_id`) REFERENCES `korisnik` (`id`),
+      CONSTRAINT `fk_korisnik_document_document` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`)
+);
+
+INSERT INTO `korisnik_document` (`id`, `korisnik_id`, `document_id`) VALUES
+    ('1', '1', '1');
 
 
 CREATE TABLE `cert` (

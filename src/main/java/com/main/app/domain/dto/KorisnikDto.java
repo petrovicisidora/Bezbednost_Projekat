@@ -2,6 +2,9 @@ package com.main.app.domain.dto;
 
 import com.main.app.enums.Roles;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class KorisnikDto {
     private String email;
     private String password;
@@ -12,6 +15,16 @@ public class KorisnikDto {
     private String state;
     private String phoneNumber;
     private String jobTitle;
+
+    private List<SkillDto> skills = new ArrayList<>();
+
+    public List<SkillDto> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(List<SkillDto> skills) {
+        this.skills = skills;
+    }
 
     public KorisnikDto() {}
 

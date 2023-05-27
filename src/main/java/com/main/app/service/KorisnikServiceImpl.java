@@ -1,7 +1,10 @@
 package com.main.app.service;
 
 import com.main.app.domain.dto.KorisnikDto;
+import com.main.app.domain.dto.SkillDto;
 import com.main.app.domain.model.Korisnik;
+import com.main.app.domain.model.KorisnikSkill;
+import com.main.app.domain.model.Skill;
 import com.main.app.domain.tokens.LoginRequest;
 import com.main.app.domain.tokens.TokenProvider;
 import com.main.app.domain.tokens.TokenResponse;
@@ -60,6 +63,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         // Čuvanje izmenjenog korisnika u bazi
         return korisnikRepository.save(korisnik);
     }
+
 
     @Override
     public String getUserNameAndSurname(Long userId) {
@@ -162,5 +166,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         }
         return null;
     }
+
+
 }
 
