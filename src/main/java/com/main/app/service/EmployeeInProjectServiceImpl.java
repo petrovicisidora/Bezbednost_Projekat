@@ -8,8 +8,6 @@ import com.main.app.domain.model.Project;
 import com.main.app.repository.EmployeeInProjectRepository;
 import com.main.app.repository.KorisnikRepository;
 import com.main.app.repository.ProjectRepository;
-import org.hibernate.proxy.EntityNotFoundDelegate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -44,7 +42,7 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             EmployeeInProject employeeInProject = new EmployeeInProject();
             employeeInProject.setWorker(korisnik);
             employeeInProject.setProject(project);
-            employeeInProject.setJobDescription(jobDescription); // Set the provided job description
+            employeeInProject.setJob_description(jobDescription);
             employeeInProjectRepository.save(employeeInProject);
         }
     }
@@ -67,7 +65,7 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
             employeeInProjectDto.setEmployeeId(Collections.singletonList(employeeInProject.getWorker().getId()));
             employeeInProjectDto.setProjectId(employeeInProject.getProject().getId());
-            employeeInProjectDto.setJobDescription(employeeInProject.getJobDescription());
+            employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
 
             // Retrieve the employee details and set them in the DTO
             Korisnik worker = employeeInProject.getWorker();
@@ -82,6 +80,7 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             projectDto.setStartDate(project.getStartDate());
             projectDto.setEndDate(project.getEndDate());
             employeeInProjectDto.setProject(projectDto);
+            projectDto.setJobDescription(employeeInProject.getJob_description());
 
             employeeInProjectDtos.add(employeeInProjectDto);
         }
@@ -97,23 +96,35 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             List<ProjectDto> projects = new ArrayList<>();
 
             for (EmployeeInProject employeeInProject : employeeInProjects) {
-                ProjectDto projectDto = convertToProjectDto(employeeInProject.getProject());
-                EmployeeInProjectDto employeeInProjectDto = convertToEmployeeInProjectDto(employeeInProject);
-                employeeInProjectDto.setProject(projectDto);  // Set projectDto in employeeInProjectDto
+                // Izvršavanje posebnog upita za dobavljanje projekta sa jobDescription
+                Project project = employeeInProject.getProject();
+                String jobDescription = employeeInProject.getJob_description();
+
+                // Konverzija projekta u ProjectDto
+                ProjectDto projectDto = convertToProjectDto(project);
+                projectDto.setJobDescription(jobDescription);
+
                 projects.add(projectDto);
             }
-
             return projects;
         } else {
             throw new EntityNotFoundException("Korisnik nije pronađen!");
         }
     }
 
+
+
     private EmployeeInProjectDto convertToEmployeeInProjectDto(EmployeeInProject employeeInProject) {
         EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
-        employeeInProjectDto.setJobDescription(employeeInProject.getJobDescription());
+        employeeInProjectDto.setEmployeeId(Collections.singletonList(employeeInProject.getWorker().getId()));
+        employeeInProjectDto.setProjectId(employeeInProject.getProject().getId());
+        employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
+        ProjectDto projectDto = convertToProjectDto(employeeInProject.getProject());
+        projectDto.setJobDescription(employeeInProject.getJob_description());
+        employeeInProjectDto.setProject(projectDto);
         return employeeInProjectDto;
     }
+
 
     @Override
     public List<EmployeeInProjectDto> getEmployeesInProject(Long projectId) {
@@ -124,9 +135,10 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             EmployeeInProjectDto employeeInProjectDto = new EmployeeInProjectDto();
             employeeInProjectDto.setEmployeeId(Collections.singletonList(employeeInProject.getWorker().getId()));
             employeeInProjectDto.setProjectId(employeeInProject.getProject().getId());
-            employeeInProjectDto.setJobDescription(employeeInProject.getJobDescription());
+            employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
             employeeInProjectDto.setProject(convertToProjectDto(employeeInProject.getProject()));
             employeeInProjectDto.setEmployeeFullName(getEmployeeFullName(employeeInProject.getWorker().getId()));
+            employeeInProjectDto.setJobTitle(employeeInProject.getWorker().getJobTitle());
             employeeInProjectDtos.add(employeeInProjectDto);
         }
 
@@ -151,6 +163,27 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             return "";
         }
     }
+
+    @Override
+    public void updateJobDescription(Long employeeInProjectId, String newJobDescription) {
+        EmployeeInProject employeeInProject = employeeInProjectRepository.findById(employeeInProjectId)
+                .orElseThrow(() -> new EntityNotFoundException("EmployeeInProject nije pronađen!"));
+
+        employeeInProject.setJob_description(newJobDescription);
+        employeeInProjectRepository.save(employeeInProject);
+    }
+
+    @Override
+    public Optional<EmployeeInProject> getEmployeeInProjectById(Long employeeInProjectId) {
+        return employeeInProjectRepository.findById(employeeInProjectId);
+    }
+
+    @Override
+    public Long getEmployeeInProjectIdByProjectIdAndWorkerId(Long projectId, Long workerId) {
+        return employeeInProjectRepository.findEmployeeInProjectIdByProjectIdAndWorkerId(projectId, workerId);
+    }
+
+
 
 
 

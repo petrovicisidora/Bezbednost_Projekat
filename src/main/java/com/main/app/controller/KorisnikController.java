@@ -106,6 +106,24 @@ public class KorisnikController {
         return ResponseEntity.ok("Successfully logged out.");
     }
 
+    @GetMapping("/getUserIdByEmail/{email}")
+    public ResponseEntity<Long> getUserIdByEmail(@PathVariable("email") String email) {
+        Long userId = korisnikService.getUserIdByEmail(email);
+        if (userId != null) {
+            return ResponseEntity.ok(userId);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
+    @GetMapping("/getJobTitleByEmail/{email}")
+    public ResponseEntity<String> getJobTitleByEmail(@PathVariable("email") String email) {
+        String jobTitle = korisnikService.getJobTitleByEmail(email);
+        if (jobTitle != null) {
+            return ResponseEntity.ok(jobTitle);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }

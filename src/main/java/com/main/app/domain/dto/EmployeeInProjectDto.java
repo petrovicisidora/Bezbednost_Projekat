@@ -15,5 +15,6 @@ public class EmployeeInProjectDto {
     private String jobDescription;
     private ProjectDto project;
     private String employeeFullName;
+    private String jobTitle;
 
 }
