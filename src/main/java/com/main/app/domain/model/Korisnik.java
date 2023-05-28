@@ -65,8 +65,6 @@ public class Korisnik implements Serializable {
     @Embedded
     private LoginWithEmail emailLogin;
 
-
-
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return  null;
     }

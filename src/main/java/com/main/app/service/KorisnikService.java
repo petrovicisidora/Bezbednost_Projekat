@@ -29,8 +29,8 @@ public interface KorisnikService {
         public void posaljiLoginEmail(Korisnik korisnik, String aktivacijskiLink);
     Korisnik findById(Long userId);
 
-        Optional<Korisnik> getKorisnikByEmail(String email);
-        Long getUserIdByEmail(String email);
+
+       
         String getJobTitleByEmail(String email);
 
     List<Korisnik> getKorisniciNaCekanju();

@@ -19,6 +19,9 @@ INSERT INTO `user` (`id`, `email`, `password`, `first_name`, `last_name`, `role`
 
 ('1', 'test1@gmail.com', '$2a$10$gDqfRHdeFeiopzJ3MSNiLOdYsTDU/RJWhTr5OJvGHE3355C5OLDDm', 'ADMIN', 'ADMIN', 'ADMIN', 0, '2011-11-11 00:00:00','2011-11-11 00:00:00',
 '2011-11-11 00:00:00');
+DROP TABLE IF EXISTS `korisnik`;
+DROP TABLE IF EXISTS `projekat`;
+DROP TABLE IF EXISTS `employee_in_project`;
 
 CREATE TABLE `korisnik` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,

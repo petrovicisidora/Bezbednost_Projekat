@@ -234,18 +234,18 @@ public class KorisnikServiceImpl implements KorisnikService {
 
     public void posaljiLoginEmail(Korisnik korisnik, String aktivacijskiLink) {
 
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(korisnik.getEmail());
-            message.setSubject("Login via email");
-            message.setText(aktivacijskiLink);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(korisnik.getEmail());
+        message.setSubject("Login via email");
+        message.setText(aktivacijskiLink);
 
-            try {
-                mailSender.send(message);
-                System.out.println("Aktivacijski e-mail poslan na: " + korisnik.getEmail());
-            } catch (MailException e) {
-                System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
-            }
-
+        try {
+            mailSender.send(message);
+            System.out.println("Aktivacijski e-mail poslan na: " + korisnik.getEmail());
+        } catch (MailException e) {
+            System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
+        }
+    }
     public String getJobTitleByEmail(String email) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
         if (korisnikOptional.isPresent()) {

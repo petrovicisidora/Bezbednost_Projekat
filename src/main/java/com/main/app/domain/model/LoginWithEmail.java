@@ -14,10 +14,10 @@ import java.util.UUID;
 @Builder
 @Embeddable
 public class LoginWithEmail implements Serializable {
-    @Column(name = "token")
+
     private UUID token;
-    @Column(name = "expiration_date")
+
     private Date expirationDate;
-    @Column(name = "is_used")
+
     private boolean isUsed;
 }
