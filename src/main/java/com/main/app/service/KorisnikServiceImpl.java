@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+
+
 import org.springframework.mail.javamail.MimeMessageHelper;
+
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,17 +39,20 @@ public class KorisnikServiceImpl implements KorisnikService {
 
     private final JavaMailSender mailSender;
 
+
     @Autowired
     private AktivacijaService aktivacijaService;
 
 
     @Autowired
     public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, JavaMailSender mailSender, AktivacijaService aktivacijaService) {
+
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.mailSender = mailSender;
         this.aktivacijaService = aktivacijaService;
+
     }
 
     @Override
@@ -201,8 +207,13 @@ public class KorisnikServiceImpl implements KorisnikService {
 
 
     @Override
-    public Optional<Korisnik> getKorisnikByEmail(String email) {
-        return korisnikRepository.findByEmail(email);
+    public Korisnik getKorisnikByEmail(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return korisnik;
+        }
+        return null;
     }
 
     @Override
@@ -216,6 +227,25 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
     @Override
+
+    public Korisnik findById(Long userId) {
+      return korisnikRepository.findById(userId).get();
+    }
+
+    public void posaljiLoginEmail(Korisnik korisnik, String aktivacijskiLink) {
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(korisnik.getEmail());
+            message.setSubject("Login via email");
+            message.setText(aktivacijskiLink);
+
+            try {
+                mailSender.send(message);
+                System.out.println("Aktivacijski e-mail poslan na: " + korisnik.getEmail());
+            } catch (MailException e) {
+                System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
+            }
+
     public String getJobTitleByEmail(String email) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
         if (korisnikOptional.isPresent()) {
@@ -302,9 +332,12 @@ public class KorisnikServiceImpl implements KorisnikService {
             korisnikRepository.save(korisnik);
         } else {
             throw new RuntimeException("Korisnik nije pronađen.");
+
         }
     }
 
 
+
 }
+
 

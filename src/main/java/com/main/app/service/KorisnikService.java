@@ -21,6 +21,14 @@ public interface KorisnikService {
         Optional<Korisnik> getKorisnikById(Long id);
         String getUserNameAndSurname(Long userId);
         List<String> getAllUserNamesAndSurnames();
+
+
+        Korisnik getKorisnikByEmail(String email);
+
+        Long getUserIdByEmail(String email);
+        public void posaljiLoginEmail(Korisnik korisnik, String aktivacijskiLink);
+    Korisnik findById(Long userId);
+
         Optional<Korisnik> getKorisnikByEmail(String email);
         Long getUserIdByEmail(String email);
         String getJobTitleByEmail(String email);
@@ -37,4 +45,5 @@ public interface KorisnikService {
     boolean proveriAktivacijskiLink(Long korisnikId, String timestamp, String hmac);
 
     void aktivirajKorisnika(Long korisnikId);
+
 }

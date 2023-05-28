@@ -15,5 +15,7 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
 
     void deleteRefreshTokenByEmail(String userEmail);
 
+
     List<Korisnik> findByStatus(Status status);
+
 }

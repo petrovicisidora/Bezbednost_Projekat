@@ -2,12 +2,19 @@ package com.main.app.controller;
 
 import com.main.app.service.AktivacijaService;
 import com.main.app.domain.dto.KorisnikDto;
+import com.main.app.domain.model.HmacUtil;
 import com.main.app.domain.model.Korisnik;
+import com.main.app.domain.model.LoginWithEmail;
 import com.main.app.domain.tokens.LoginRequest;
 import com.main.app.domain.tokens.TokenProvider;
 import com.main.app.domain.tokens.TokenResponse;
+
 import com.main.app.repository.KorisnikRepository;
 import com.main.app.service.KorisnikService;
+
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.hibernate.id.GUIDGenerator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,12 +22,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/korisnik")
 public class KorisnikController {
+
+
 
     private KorisnikService korisnikService;
     private KorisnikRepository korisnikRepository;
@@ -29,8 +37,10 @@ public class KorisnikController {
     private AktivacijaService activationService;
 
     @Autowired
-    public KorisnikController(KorisnikService korisnikService) {
+    public KorisnikController(KorisnikService korisnikService,KorisnikRepository korisnikRepository,TokenProvider tokenProvider) {
         this.korisnikService = korisnikService;
+        this.korisnikRepository=korisnikRepository;
+        this.tokenProvider=tokenProvider;
     }
 
     @GetMapping(value = "/getAll")
@@ -70,6 +80,73 @@ public class KorisnikController {
         }
     }
 
+    @PostMapping("/loginemail")
+    public ResponseEntity<TokenResponse> loginEmail(@RequestBody LoginRequest loginRequest) {
+        Calendar calendar = Calendar.getInstance();
+        Date now = calendar.getTime();
+        String email=loginRequest.getEmail();
+        // Add 10 minutes
+        calendar.add(Calendar.MINUTE, 10);
+        Date expdate = calendar.getTime();
+        LoginWithEmail emailLog = LoginWithEmail.builder()
+                .token(UUID.randomUUID())
+                .expirationDate(expdate)
+                .isUsed(false) // Set it to false initially
+                .build();
+
+        Korisnik k= korisnikService.getKorisnikByEmail(email);
+
+        Korisnik kk=korisnikService.findById(k.getId());
+        kk.setEmailLogin(emailLog);
+        korisnikRepository.save(kk);
+
+        // Generate the HMAC for the token and registerUserInfoId
+        String hmac = HmacUtil.generateHmac(emailLog.getToken().toString() + email, "special-special-secret-key");
+
+        String activationLink = "http://localhost:3000/activate/?token="+ hmac + "&email=" + email;
+        korisnikService.posaljiLoginEmail(kk,  "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/emailActivate")
+    public ResponseEntity emailLoginAct(@RequestParam("token") String token, @RequestParam("email") String email) {
+        // Retrieve the RegisterUserInfo object using the provided registerUserInfoId
+       Korisnik korisnik = korisnikService.getKorisnikByEmail(email);
+
+        // Check if the RegisterUserInfo exists and the token matches
+
+            LoginWithEmail emailtoken = korisnik.getEmailLogin();
+
+            // Check if the token is expired
+            if (emailtoken.getExpirationDate().before(new Date())) {
+                return ResponseEntity.badRequest().body("Token has expired.");
+            }
+
+            // Check if the token has been used before
+            if (emailtoken.isUsed()) {
+                return ResponseEntity.badRequest().body("Token has already been used.");
+            }
+
+            // Generate the expected HMAC for the token and registerUserInfoId
+            String expectedHmac = HmacUtil.generateHmac(korisnik.getEmailLogin().getToken() + email, "special-special-secret-key");
+
+            // Verify if the provided HMAC matches the expected HMAC
+            if (expectedHmac.equals(token)) {
+
+                    // Kreiranje access tokena
+                    String accessToken = tokenProvider.generateAccessToken(korisnik);
+                    // Kreiranje refresh tokena
+                    String refreshToken = tokenProvider.generateRefreshToken(korisnik);
+
+
+
+                return new ResponseEntity<>(new TokenResponse(accessToken, refreshToken), HttpStatus.OK);
+            }
+
+
+        return ResponseEntity.badRequest().body("Invalid activation link.");
+    }
+
     @GetMapping("/getUserNameAndSurname/{userId}")
     public String getUserNameAndSurname(@PathVariable Long userId) {
         return korisnikService.getUserNameAndSurname(userId);
@@ -94,10 +171,9 @@ public class KorisnikController {
 
     @GetMapping("/getByEmail/{email}")
     public ResponseEntity<Korisnik> getKorisnikByEmail(@PathVariable("email") String email) {
-        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikByEmail(email);
+       Korisnik korisnik = korisnikService.getKorisnikByEmail(email);
 
-        if (korisnikOptional.isPresent()) {
-            Korisnik korisnik = korisnikOptional.get();
+        if(korisnik!=null){
             return ResponseEntity.ok(korisnik);
         } else {
             return ResponseEntity.notFound().build();
