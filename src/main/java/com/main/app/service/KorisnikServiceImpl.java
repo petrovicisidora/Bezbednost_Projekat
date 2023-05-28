@@ -7,6 +7,9 @@ import com.main.app.domain.tokens.TokenProvider;
 import com.main.app.domain.tokens.TokenResponse;
 import com.main.app.repository.KorisnikRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,11 +30,13 @@ public class KorisnikServiceImpl implements KorisnikService {
     @Autowired
     private TokenProvider tokenProvider;
 
+    private final JavaMailSender mailSender;
     @Autowired
-    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
+    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, JavaMailSender mailSender) {
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
     }
 
     @Override
@@ -139,8 +144,13 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
     @Override
-    public Optional<Korisnik> getKorisnikByEmail(String email) {
-        return korisnikRepository.findByEmail(email);
+    public Korisnik getKorisnikByEmail(String email) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            return korisnik;
+        }
+        return null;
     }
 
     @Override
@@ -152,5 +162,27 @@ public class KorisnikServiceImpl implements KorisnikService {
         }
         return null;
     }
-}
+
+    @Override
+    public Korisnik findById(Long userId) {
+      return korisnikRepository.findById(userId).get();
+    }
+
+    public void posaljiLoginEmail(Korisnik korisnik, String aktivacijskiLink) {
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(korisnik.getEmail());
+            message.setSubject("Login via email");
+            message.setText(aktivacijskiLink);
+
+            try {
+                mailSender.send(message);
+                System.out.println("Aktivacijski e-mail poslan na: " + korisnik.getEmail());
+            } catch (MailException e) {
+                System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
+            }
+        }
+    }
+
+
 

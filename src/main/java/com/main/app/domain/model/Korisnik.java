@@ -7,9 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 @Data
@@ -55,6 +58,11 @@ public class Korisnik implements Serializable {
 
     @Column(name = "python")
     private int python;
+    @Embedded
+    private LoginWithEmail emailLogin;
 
 
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return  null;
+    }
 }

@@ -90,9 +90,9 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
 
     @Override
     public List<ProjectDto> getProjectsByEmployee(String email) {
-        Optional<Korisnik> korisnikOptional = korisnikService.getKorisnikByEmail(email);
-        if (korisnikOptional.isPresent()) {
-            List<EmployeeInProject> employeeInProjects = employeeInProjectRepository.findByWorkerId(korisnikOptional.get().getId());
+        Korisnik korisnikOptional = korisnikService.getKorisnikByEmail(email);
+        if (korisnikOptional!=null) {
+            List<EmployeeInProject> employeeInProjects = employeeInProjectRepository.findByWorkerId(korisnikOptional.getId());
             List<ProjectDto> projects = new ArrayList<>();
 
             for (EmployeeInProject employeeInProject : employeeInProjects) {

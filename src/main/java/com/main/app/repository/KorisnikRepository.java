@@ -13,4 +13,5 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
     void deleteByEmail(String userEmail);
 
     void deleteRefreshTokenByEmail(String userEmail);
+
 }
