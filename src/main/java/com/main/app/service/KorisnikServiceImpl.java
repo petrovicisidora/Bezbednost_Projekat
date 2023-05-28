@@ -1,19 +1,23 @@
 package com.main.app.service;
 
 import com.main.app.domain.dto.KorisnikDto;
-import com.main.app.domain.dto.SkillDto;
 import com.main.app.domain.model.Korisnik;
-import com.main.app.domain.model.KorisnikSkill;
-import com.main.app.domain.model.Skill;
 import com.main.app.domain.tokens.LoginRequest;
 import com.main.app.domain.tokens.TokenProvider;
 import com.main.app.domain.tokens.TokenResponse;
+import com.main.app.enums.Status;
 import com.main.app.repository.KorisnikRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,11 +34,19 @@ public class KorisnikServiceImpl implements KorisnikService {
     @Autowired
     private TokenProvider tokenProvider;
 
+    private final JavaMailSender mailSender;
+
     @Autowired
-    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
+    private AktivacijaService aktivacijaService;
+
+
+    @Autowired
+    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, JavaMailSender mailSender, AktivacijaService aktivacijaService) {
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
+        this.aktivacijaService = aktivacijaService;
     }
 
     @Override
@@ -91,6 +103,30 @@ public class KorisnikServiceImpl implements KorisnikService {
         return userNamesAndSurnames;
     }
 
+    @Override
+    public Korisnik registerAdmin(KorisnikDto korisnikDto) {
+        Optional<Korisnik> existingUser = korisnikRepository.findByEmail(korisnikDto.getEmail());
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Korisnik sa datom email adresom već postoji.");
+        }
+        String sifra = passwordEncoder.encode(korisnikDto.getPassword());
+
+        // kreiranje novog korisnika
+        Korisnik korisnik = new Korisnik();
+        korisnik.setEmail(korisnikDto.getEmail());
+        korisnik.setPassword(sifra);
+        korisnik.setFirstName(korisnikDto.getFirstName());
+        korisnik.setLastName(korisnikDto.getLastName());
+        korisnik.setAddress(korisnikDto.getAddress());
+        korisnik.setCity(korisnikDto.getCity());
+        korisnik.setState(korisnikDto.getState());
+        korisnik.setPhoneNumber(korisnikDto.getPhoneNumber());
+        korisnik.setJobTitle(korisnikDto.getJobTitle());
+        korisnik.setStatus(Status.APPROVED);
+
+        // čuvanje korisnika u bazi i vraćanje sa generisanim ID-em
+        return korisnikRepository.save(korisnik);
+    }
 
     @Override
     public Korisnik registerKorisnik(KorisnikDto korisnikDto) {
@@ -111,6 +147,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         korisnik.setState(korisnikDto.getState());
         korisnik.setPhoneNumber(korisnikDto.getPhoneNumber());
         korisnik.setJobTitle(korisnikDto.getJobTitle());
+        korisnik.setStatus(Status.PENDING);
 
         // čuvanje korisnika u bazi i vraćanje sa generisanim ID-em
         return korisnikRepository.save(korisnik);
@@ -122,7 +159,7 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
 
-    @Override
+    /*@Override
     public TokenResponse loginAndGetTokens(LoginRequest loginRequest) {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(loginRequest.getEmail());
 
@@ -140,7 +177,28 @@ public class KorisnikServiceImpl implements KorisnikService {
         }
 
         return null;
+    }*/
+
+    @Override
+    public TokenResponse loginAndGetTokens(LoginRequest loginRequest) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(loginRequest.getEmail());
+
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+
+            if (korisnik.getStatus() == Status.APPROVED && BCrypt.checkpw(loginRequest.getPassword(), korisnik.getPassword())) {
+                // Kreiranje access tokena
+                String accessToken = tokenProvider.generateAccessToken(korisnik);
+                // Kreiranje refresh tokena
+                String refreshToken = tokenProvider.generateRefreshToken(korisnik);
+
+                return new TokenResponse(accessToken, refreshToken);
+            }
+        }
+
+        return null;
     }
+
 
     @Override
     public Optional<Korisnik> getKorisnikByEmail(String email) {
@@ -165,6 +223,86 @@ public class KorisnikServiceImpl implements KorisnikService {
             return korisnik.getJobTitle();
         }
         return null;
+    }
+
+    @Override
+    public List<Korisnik> getKorisniciNaCekanju() {
+        return korisnikRepository.findByStatus(Status.PENDING);
+    }
+
+    @Override
+    public void prihvatiKorisnika(Long korisnikId) {
+        Korisnik korisnik = korisnikRepository.findById(korisnikId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen."));
+
+        korisnik.setStatus(Status.PENDING);
+        korisnikRepository.save(korisnik);
+
+        String aktivacijskiLink = aktivacijaService.generisiAktivacioniLink(korisnikId);
+        posaljiAktivacijskiEmail(Optional.of(korisnik), aktivacijskiLink);
+    }
+
+    @Override
+    public void posaljiAktivacijskiEmail(Optional<Korisnik> korisnik, String aktivacijskiLink) {
+        korisnik.ifPresent(korisnikObj -> {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(korisnikObj.getEmail());
+            message.setSubject("Aktivacija korisničkog računa");
+            message.setText("Poštovani " + korisnikObj.getFirstName() + ",\n\n"
+                    + "Hvala vam na registraciji na našoj aplikaciji.\n"
+                    + "Kako biste aktivirali svoj korisnički račun, molimo posetite sledeći link:\n"
+                    + aktivacijskiLink + "\n\n"
+                    + "Srdačan pozdrav,\n"
+                    + "Vaša aplikacija");
+
+            try {
+                mailSender.send(message);
+                System.out.println("Aktivacijski e-mail poslan na: " + korisnikObj.getEmail());
+            } catch (MailException e) {
+                System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void odbijKorisnika(Long korisnikId, String razlogOdbijanja) {
+        Korisnik korisnik = korisnikRepository.findById(korisnikId)
+                .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen."));
+
+        korisnik.setStatus(Status.REJECTED);
+        korisnikRepository.save(korisnik);
+
+        // Slanje e-pošte korisniku s razlogom odbijanja
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(korisnik.getEmail());
+            helper.setSubject("Registracija odbijena");
+            helper.setText("Poštovani " + korisnik.getFirstName() + ",\n\nVaša registracija je odbijena iz sledećeg razloga:\n" + razlogOdbijanja + "\n\nHvala, \nVaša aplikacija");
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Greška prilikom slanja e-pošte: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean proveriAktivacijskiLink(Long korisnikId, String timestamp, String hmac) {
+        String podaci = korisnikId + ":" + timestamp;
+        String generisaniHmac = aktivacijaService.generisiHmac(podaci);
+
+        return hmac.equals(generisaniHmac);
+    }
+
+
+    @Override
+    public void aktivirajKorisnika(Long korisnikId) {
+        Optional<Korisnik> korisnikOptional = korisnikRepository.findById(korisnikId);
+        if (korisnikOptional.isPresent()) {
+            Korisnik korisnik = korisnikOptional.get();
+            korisnik.setStatus(Status.APPROVED);
+            korisnikRepository.save(korisnik);
+        } else {
+            throw new RuntimeException("Korisnik nije pronađen.");
+        }
     }
 
 

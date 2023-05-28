@@ -31,13 +31,14 @@ CREATE TABLE `korisnik` (
     `state` varchar(255) NOT NULL,
     `phone_number` varchar(255) NOT NULL,
     `job_title` varchar(255) NOT NULL,
+     `status` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title` ) VALUES
+INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `status` ) VALUES
 
     ('1', 'admin@gmail.com', '123', 'Admin', 'Admin', 'Admin', 'Admin', 'fesef','111',
-     'ADMIN');
+     'ADMIN', 'APPROVED');
 
 CREATE TABLE `projekat` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
