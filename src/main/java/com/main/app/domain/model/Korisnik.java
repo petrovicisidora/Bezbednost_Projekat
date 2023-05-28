@@ -1,6 +1,7 @@
 package com.main.app.domain.model;
 
 import com.main.app.enums.Roles;
+import com.main.app.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
+
 import java.util.Collection;
+
+import java.util.ArrayList;
+
 import java.util.List;
 
 @Data
@@ -53,13 +58,13 @@ public class Korisnik implements Serializable {
     @Column(name = "job_title")
     private String jobTitle;
 
-    @Column(name = "java")
-    private int java;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-    @Column(name = "python")
-    private int python;
     @Embedded
     private LoginWithEmail emailLogin;
+
 
 
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,6 +1,8 @@
 package com.main.app.repository;
 
 import com.main.app.domain.model.EmployeeInProject;
+import com.main.app.domain.model.Korisnik;
+import com.main.app.domain.model.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,4 +14,6 @@ public interface EmployeeInProjectRepository extends JpaRepository<EmployeeInPro
     List<EmployeeInProject> findByWorkerId(Long employeeId);
     @Query("SELECT e.id FROM EmployeeInProject e WHERE e.project.id = :projectId AND e.worker.id = :workerId")
     Long findEmployeeInProjectIdByProjectIdAndWorkerId(@Param("projectId") Long projectId, @Param("workerId") Long workerId);
+
+    boolean existsByWorkerAndProject(Korisnik korisnik, Project project);
 }

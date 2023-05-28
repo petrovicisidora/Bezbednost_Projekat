@@ -11,6 +11,8 @@ import com.main.app.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -31,23 +33,56 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
         this.korisnikService = korisnikService;
     }
 
-    @Override
+    /*@Override
     public void addEmployeesToProject(EmployeeInProjectDto employeeInProjectDto) {
         Project project = projectRepository.findById(employeeInProjectDto.getProjectId())
                 .orElseThrow(() -> new EntityNotFoundException("Project hasn't been found!"));
         List<Korisnik> korisnici = korisnikRepository.findAllById(employeeInProjectDto.getEmployeeId());
         String jobDescription = employeeInProjectDto.getJobDescription();
+        LocalDate jobStartTime = employeeInProjectDto.getJobStartTime();
+        LocalDate jobEndTime = employeeInProjectDto.getJobEndTime();
 
         for (Korisnik korisnik : korisnici) {
             EmployeeInProject employeeInProject = new EmployeeInProject();
             employeeInProject.setWorker(korisnik);
             employeeInProject.setProject(project);
             employeeInProject.setJob_description(jobDescription);
+            employeeInProject.setJobStartTime(LocalDate.from(jobStartTime));
+            employeeInProject.setJobEndTime(LocalDate.from(jobEndTime));
+            employeeInProjectRepository.save(employeeInProject);
+        }
+    }*/
+    @Override
+    public void addEmployeesToProject(EmployeeInProjectDto employeeInProjectDto) {
+        Project project = projectRepository.findById(employeeInProjectDto.getProjectId())
+                .orElseThrow(() -> new EntityNotFoundException("Project hasn't been found!"));
+
+        List<Korisnik> korisnici = korisnikRepository.findAllById(employeeInProjectDto.getEmployeeId());
+        String jobDescription = employeeInProjectDto.getJobDescription();
+        LocalDate jobStartTime = employeeInProjectDto.getJobStartTime();
+        LocalDate jobEndTime = employeeInProjectDto.getJobEndTime();
+
+        for (Korisnik korisnik : korisnici) {
+            if (isWorkerAlreadyOnProject(korisnik, project)) {
+                throw new IllegalStateException("Korisnik je već dodat na ovaj projekat.");
+            }
+
+            EmployeeInProject employeeInProject = new EmployeeInProject();
+            employeeInProject.setWorker(korisnik);
+            employeeInProject.setProject(project);
+            employeeInProject.setJob_description(jobDescription);
+            employeeInProject.setJobStartTime(LocalDate.from(jobStartTime));
+            employeeInProject.setJobEndTime(LocalDate.from(jobEndTime));
             employeeInProjectRepository.save(employeeInProject);
         }
     }
 
-        @Override
+    private boolean isWorkerAlreadyOnProject(Korisnik korisnik, Project project) {
+        return employeeInProjectRepository.existsByWorkerAndProject(korisnik, project);
+    }
+
+
+    @Override
         public Optional<Korisnik> getKorisnikById(Long employeeId) {
             return korisnikService.getKorisnikById(employeeId);
         }
@@ -66,6 +101,9 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             employeeInProjectDto.setEmployeeId(Collections.singletonList(employeeInProject.getWorker().getId()));
             employeeInProjectDto.setProjectId(employeeInProject.getProject().getId());
             employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
+            employeeInProjectDto.setJobStartTime(employeeInProject.getJobStartTime());
+            employeeInProjectDto.setJobEndTime(employeeInProject.getJobEndTime());
+
 
             // Retrieve the employee details and set them in the DTO
             Korisnik worker = employeeInProject.getWorker();
@@ -138,6 +176,9 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
             employeeInProjectDto.setJobDescription(employeeInProject.getJob_description());
             employeeInProjectDto.setProject(convertToProjectDto(employeeInProject.getProject()));
             employeeInProjectDto.setEmployeeFullName(getEmployeeFullName(employeeInProject.getWorker().getId()));
+            employeeInProjectDto.setJobTitle(employeeInProject.getWorker().getJobTitle());
+            employeeInProjectDto.setJobStartTime(employeeInProject.getJobStartTime());
+            employeeInProjectDto.setJobEndTime(employeeInProject.getJobEndTime());
             employeeInProjectDtos.add(employeeInProjectDto);
         }
 
@@ -182,10 +223,10 @@ public class EmployeeInProjectServiceImpl implements EmployeeInProjectService{
         return employeeInProjectRepository.findEmployeeInProjectIdByProjectIdAndWorkerId(projectId, workerId);
     }
 
-
-
-
-
+    @Override
+    public void deleteEmployeeFromProject(Long employeeInProjectId) {
+        employeeInProjectRepository.deleteById(employeeInProjectId);
+    }
 
 
 

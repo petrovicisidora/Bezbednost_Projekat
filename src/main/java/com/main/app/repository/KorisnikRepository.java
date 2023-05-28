@@ -1,6 +1,7 @@
 package com.main.app.repository;
 
 import com.main.app.domain.model.Korisnik;
+import com.main.app.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,5 +14,8 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
     void deleteByEmail(String userEmail);
 
     void deleteRefreshTokenByEmail(String userEmail);
+
+
+    List<Korisnik> findByStatus(Status status);
 
 }
