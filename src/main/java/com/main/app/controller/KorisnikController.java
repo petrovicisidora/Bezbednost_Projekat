@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -34,6 +35,7 @@ public class KorisnikController {
     }
 
     @GetMapping(value = "/getAll")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Korisnik>> getAllKorisnici() {
         List<Korisnik> korisnici = korisnikService.getAllKorisnici();
         return new ResponseEntity<>(korisnici, HttpStatus.OK);
@@ -47,6 +49,7 @@ public class KorisnikController {
 
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> registerKorisnik(@RequestBody KorisnikDto korisnikDto) {
         Korisnik korisnik = korisnikService.registerKorisnik(korisnikDto);
         return ResponseEntity.ok(korisnik);

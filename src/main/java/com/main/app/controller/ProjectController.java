@@ -7,6 +7,7 @@ import com.main.app.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
@@ -24,6 +25,8 @@ public class ProjectController {
     }
 
     @GetMapping(value = "/getAll")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MENADZER_PROJEKTA')")
+
     public ResponseEntity<List<ProjectDto>> getAllProjects() {
         List<ProjectDto> projects = projectService.getAllProjects();
         return new ResponseEntity<>(projects, HttpStatus.OK);

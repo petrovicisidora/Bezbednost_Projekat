@@ -7,6 +7,7 @@ import com.main.app.domain.model.Korisnik;
 import com.main.app.service.EmployeeInProjectService;
 import com.main.app.service.KorisnikService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class EmployeeInProjectController {
         return ResponseEntity.ok().build();
     }
     @GetMapping("/getAll")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MENADZER_PROJEKTA')")
     public ResponseEntity<List<EmployeeInProjectDto>> getAllEmployeesInProjects() {
         List<EmployeeInProjectDto> employeesInProjects = employeeInProjectService.getAllEmployeesInProjects();
         return ResponseEntity.ok(employeesInProjects);
@@ -54,6 +56,7 @@ public class EmployeeInProjectController {
     }
 
     @GetMapping("/getProjectsFromEmployee/{email}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MENADZER_PROJEKTA')")
     public ResponseEntity<List<ProjectDto>> getProjectsByEmployee(@PathVariable String email) {
 
         List<ProjectDto> projects = employeeInProjectService.getProjectsByEmployee(email);
