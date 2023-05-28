@@ -6,6 +6,7 @@ import com.main.app.domain.model.EmployeeInProject;
 import com.main.app.domain.model.Korisnik;
 import com.main.app.service.EmployeeInProjectService;
 import com.main.app.service.KorisnikService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -98,6 +99,16 @@ public class EmployeeInProjectController {
             return ResponseEntity.ok(employeeInProjectId);
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{employeeInProjectId}")
+    public ResponseEntity<String> deleteEmployeeFromProject(@PathVariable Long employeeInProjectId) {
+        try {
+            employeeInProjectService.deleteEmployeeFromProject(employeeInProjectId);
+            return ResponseEntity.ok("Employee removed from project successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to remove employee from project.");
         }
     }
 
