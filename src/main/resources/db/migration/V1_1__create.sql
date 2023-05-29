@@ -1,4 +1,12 @@
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `skill`;
+DROP TABLE IF EXISTS `korisnik_skills`;
+DROP TABLE IF EXISTS `document`;
+DROP TABLE IF EXISTS `korisnik_document`;
+DROP TABLE IF EXISTS `employee_in_project`;
+DROP TABLE IF EXISTS `projekat`;
+
+
 
 CREATE TABLE `user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -35,13 +43,16 @@ CREATE TABLE `korisnik` (
     `phone_number` varchar(255) NOT NULL,
     `job_title` varchar(255) NOT NULL,
      `status` varchar(255) NOT NULL,
+     token BINARY(16),
+     expiration_date DATETIME,
+     is_used TINYINT(1),
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `status` ) VALUES
+INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `status`, `token`, `expiration_date`, `is_used` ) VALUES
 
     ('1', 'admin@gmail.com', '123', 'Admin', 'Admin', 'Admin', 'Admin', 'fesef','111',
-     'ADMIN', 'APPROVED');
+     'ADMIN', 'APPROVED', X'0123456789ABCDEF0123456789ABCDEF', '2023-05-31 12:00:00', 1);
 
 CREATE TABLE `projekat` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -70,9 +81,10 @@ CREATE TABLE `employee_in_project` (
 INSERT INTO employee_in_project (worker_id, project_id, job_description, job_start_time, job_end_time)
 VALUES (1, 1, 'Opis posla 1', '2023-01-01', '2023-12-31');
 
+
 CREATE TABLE `skill` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `name` varchar(255) NOT NULL,
+    `name` varchar(191) NOT NULL,
     `level` int NOT NULL,
     PRIMARY KEY (`id`)
 );
@@ -118,30 +130,4 @@ INSERT INTO `korisnik_document` (`id`, `korisnik_id`, `document_id`) VALUES
     ('1', '1', '1');
 
 
-CREATE TABLE `cert` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `date_created` datetime NOT NULL,
-  `date_deleted` datetime DEFAULT NULL,
-  `date_updated` datetime DEFAULT NULL,
-  `issuer_name` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `serial_number` varchar(255) NOT NULL,
-  `start_date` varchar(255) DEFAULT NULL,
-  `end_date` varchar(255) NOT NULL,
-  `cert` varchar(3000) NOT NULL,
-  `cert_type` varchar(3000) NOT NULL,
-  `deleted` bit(1) NOT NULL,
-  PRIMARY KEY (`id`)
-);
 
-CREATE TABLE `alarm` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `date_created` datetime NOT NULL,
-  `date_deleted` datetime DEFAULT NULL,
-  `date_updated` datetime DEFAULT NULL,
-  `date` varchar(255) NOT NULL,
-  `alarm` varchar(255) NOT NULL,
-  `agent` varchar(255) DEFAULT NULL,
-  `deleted` bit(1) NOT NULL,
-  PRIMARY KEY (`id`)
-);
