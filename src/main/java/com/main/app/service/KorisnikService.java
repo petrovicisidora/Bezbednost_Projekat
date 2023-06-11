@@ -25,6 +25,9 @@ public interface KorisnikService {
         Long getUserIdByEmail(String email);
         String getJobTitleByEmail(String email);
 
+
+        List<Korisnik> searchEngineers(String firstName, String lastName, String email);
+
     List<Korisnik> getKorisniciNaCekanju();
 
         void prihvatiKorisnika(Long korisnikId);

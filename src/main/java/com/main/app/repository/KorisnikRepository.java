@@ -16,4 +16,16 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
     void deleteRefreshTokenByEmail(String userEmail);
 
     List<Korisnik> findByStatus(Status status);
+
+    List<Korisnik> findByFirstNameContainingAndLastNameContainingAndEmailContaining(String firstName, String lastName, String email);
+    List<Korisnik>findByFirstNameStartingWithOrLastNameStartingWithOrEmailStartingWith(String firstName, String lastName, String email);
+
+    List<Korisnik> findByJobTitleAndFirstNameStartingWithOrLastNameStartingWithOrEmailStartingWith(String jobTitle, String firstName, String lastName, String email);
+    List<Korisnik> findByJobTitleAndFirstNameStartingWithOrJobTitleAndLastNameStartingWithOrJobTitleAndEmailStartingWith(String jobTitle, String firstName, String jobTitle2, String lastName, String jobTitle3, String email);
+
+
+
+
+    List<Korisnik> findByJobTitle(String jobTitle);
+
 }

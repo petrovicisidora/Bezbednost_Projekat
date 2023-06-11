@@ -41,6 +41,7 @@ public class KorisnikController {
         return new ResponseEntity<>(korisnici, HttpStatus.OK);
     }
 
+
     @PutMapping("/edit/{email}")
     public ResponseEntity<Korisnik> editKorisnik(@PathVariable("email") String email, @RequestBody KorisnikDto korisnikDto) {
         Korisnik editedKorisnik = korisnikService.editKorisnik(email, korisnikDto);
@@ -179,6 +180,12 @@ public class KorisnikController {
             return ResponseEntity.badRequest().body("Neispravan aktivacijski link.");
         }
     }
+
+    @GetMapping("/korisnici/{search}")
+    public List<Korisnik> searchUsers(@PathVariable String search) {
+        return korisnikService.searchEngineers( search,  search, search);
+    }
+
 
 
 

@@ -306,5 +306,10 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
 
+    public List<Korisnik> searchEngineers(String firstName, String lastName, String email) {
+        return  korisnikRepository.findByJobTitleAndFirstNameStartingWithOrJobTitleAndLastNameStartingWithOrJobTitleAndEmailStartingWith("INZENJER", firstName, "INZENJER", lastName, "INZENJER", email);
+    }
+
+
 }
 

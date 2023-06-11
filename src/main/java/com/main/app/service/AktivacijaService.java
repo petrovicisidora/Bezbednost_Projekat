@@ -22,7 +22,7 @@ public class AktivacijaService {
 
         String hmac = generisiHmac(podaci);
 
-        String link = "http://localhost:8083/korisnik/aktivacija/" + korisnikId + "?timestamp=" + timestamp + "&hmac=" + hmac;
+        String link = "https://localhost:443/korisnik/aktivacija/" + korisnikId + "?timestamp=" + timestamp + "&hmac=" + hmac;
 
         return link;
     }
