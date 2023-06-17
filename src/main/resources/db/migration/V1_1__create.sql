@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS `document`;
 DROP TABLE IF EXISTS `korisnik_document`;
 DROP TABLE IF EXISTS `employee_in_project`;
 DROP TABLE IF EXISTS `projekat`;
+DROP TABLE IF EXISTS `notification`;
 
 
 
@@ -125,6 +126,15 @@ CREATE TABLE `korisnik_document` (
       CONSTRAINT `fk_korisnik_document_document` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`)
 );
 
+CREATE TABLE `notification` (
+                                        `id` bigint(20) NOT NULL AUTO_INCREMENT,
+                                        `message` varchar(255) NOT NULL,
+                                        `email` varchar(255) NOT NULL,
+                                        `time` datetime NOT NULL,
+                                        `count` int NOT NULL,
+                                        `critical` BOOLEAN DEFAULT FALSE,
 
+                                        PRIMARY KEY (`id`)
+);
 
 

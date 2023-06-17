@@ -3,6 +3,8 @@ package com.main.app.controller;
 import ch.qos.logback.classic.Logger;
 import com.main.app.UserBlockedException;
 import com.main.app.domain.dto.UpdatePasswordDto;
+import com.main.app.domain.model.Notification;
+import com.main.app.repository.NotificationRepository;
 import com.main.app.service.AktivacijaService;
 import com.main.app.domain.dto.KorisnikDto;
 import com.main.app.domain.model.HmacUtil;
@@ -16,8 +18,6 @@ import com.main.app.repository.KorisnikRepository;
 import com.main.app.service.KorisnikService;
 
 import com.main.app.service.RegisterService;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
-import org.hibernate.id.GUIDGenerator;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -47,6 +48,11 @@ public class KorisnikController {
 
     @Autowired
     private RegisterService registerService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    private static Map<String, Notification> notifications = new HashMap<>();
 
     private static final Logger log = (Logger) LoggerFactory.getLogger(KorisnikController.class);
 
@@ -106,16 +112,46 @@ public class KorisnikController {
             TokenResponse tokenResponse = korisnikService.loginAndGetTokens(loginRequest);
 
             if (tokenResponse != null) {
-                log.info("Korisnik se uspješno prijavio: {}" + loginRequest.getEmail());
+                log.info("Korisnik se uspješno prijavio: {}", loginRequest.getEmail());
                 return ResponseEntity.ok(tokenResponse);
             } else {
+                log.error("Korisnik pokusava da se prijavi sa losim kredencijalima: {}", loginRequest.getEmail());
+
+                // Provera i ažuriranje notifikacija
+                Notification notification = notificationRepository.findByEmail(loginRequest.getEmail());
+                LocalDateTime currentTime = LocalDateTime.now();
+
+                if (notification != null) {
+                    LocalDateTime lastNotificationTime = notification.getTime();
+                    if (lastNotificationTime.isBefore(currentTime.minusMinutes(5))) {
+                        notification.setCount(1);
+                        notification.setCritical(false);
+                    } else {
+                        notification.setCount(notification.getCount() + 1);
+                        if (notification.getCount() > 2) {
+                            notification.setCritical(true);
+                        }
+                    }
+                } else {
+                    notification = new Notification();
+                    notification.setEmail(loginRequest.getEmail());
+                    notification.setCount(1);
+                    notification.setMessage("Security Attack!");
+                    notification.setCritical(false);
+                }
+
+                notification.setTime(currentTime);
+                notificationRepository.save(notification);
+
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         } catch (UserBlockedException e) {
             System.out.println(e.getMessage());
+            log.error("Blokirani korisnik pokusava da se prijavi: {}", loginRequest.getEmail());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
 
 
     @PostMapping("/loginemail")
