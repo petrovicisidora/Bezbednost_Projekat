@@ -1,5 +1,6 @@
 package com.main.app.controller;
 
+import ch.qos.logback.classic.Logger;
 import com.main.app.UserBlockedException;
 import com.main.app.domain.dto.UpdatePasswordDto;
 import com.main.app.service.AktivacijaService;
@@ -18,6 +19,7 @@ import com.main.app.service.RegisterService;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.hibernate.id.GUIDGenerator;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,11 +27,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.*;
+
 
 
 @RestController
@@ -46,6 +47,8 @@ public class KorisnikController {
 
     @Autowired
     private RegisterService registerService;
+
+    private static final Logger log = (Logger) LoggerFactory.getLogger(KorisnikController.class);
 
     @Autowired
     public KorisnikController(KorisnikService korisnikService,KorisnikRepository korisnikRepository,TokenProvider tokenProvider) {
@@ -103,6 +106,7 @@ public class KorisnikController {
             TokenResponse tokenResponse = korisnikService.loginAndGetTokens(loginRequest);
 
             if (tokenResponse != null) {
+                log.info("Korisnik se uspješno prijavio: {}" + loginRequest.getEmail());
                 return ResponseEntity.ok(tokenResponse);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -114,8 +114,6 @@ CREATE TABLE `document` (
      PRIMARY KEY (`id`)
 );
 
-INSERT INTO `document` (`id`, `name`, `doc`)
-VALUES ('1', 'Naziv dokumenta 1', 'Sadržaj dokumenta 1');
 
 
 CREATE TABLE `korisnik_document` (
@@ -127,8 +125,6 @@ CREATE TABLE `korisnik_document` (
       CONSTRAINT `fk_korisnik_document_document` FOREIGN KEY (`document_id`) REFERENCES `document` (`id`)
 );
 
-INSERT INTO `korisnik_document` (`id`, `korisnik_id`, `document_id`) VALUES
-    ('1', '1', '1');
 
 
 
