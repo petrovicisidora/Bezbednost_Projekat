@@ -1,6 +1,8 @@
 package com.main.app.service;
 
+import com.main.app.UserBlockedException;
 import com.main.app.domain.dto.KorisnikDto;
+import com.main.app.domain.dto.UpdatePasswordDto;
 import com.main.app.domain.model.Korisnik;
 import com.main.app.domain.tokens.LoginRequest;
 import com.main.app.domain.tokens.TokenProvider;
@@ -39,19 +41,18 @@ public class KorisnikServiceImpl implements KorisnikService {
 
     private final JavaMailSender mailSender;
 
+    @Autowired
+    private final RegisterService registerService;
+
 
     @Autowired
-    private AktivacijaService aktivacijaService;
-
-
-    @Autowired
-    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, JavaMailSender mailSender, AktivacijaService aktivacijaService) {
+    public KorisnikServiceImpl(KorisnikRepository korisnikRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, JavaMailSender mailSender, RegisterService registerService) {
 
         this.korisnikRepository = korisnikRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.mailSender = mailSender;
-        this.aktivacijaService = aktivacijaService;
+        this.registerService = registerService;
 
     }
 
@@ -193,12 +194,18 @@ public class KorisnikServiceImpl implements KorisnikService {
             Korisnik korisnik = korisnikOptional.get();
 
             if (korisnik.getStatus() == Status.APPROVED && BCrypt.checkpw(loginRequest.getPassword(), korisnik.getPassword())) {
-                // Kreiranje access tokena
+
+                if (korisnik.isBlocked()) {
+                    throw new UserBlockedException();
+                }
+
                 String accessToken = tokenProvider.generateAccessToken(korisnik);
-                // Kreiranje refresh tokena
                 String refreshToken = tokenProvider.generateRefreshToken(korisnik);
 
                 return new TokenResponse(accessToken, refreshToken);
+            }
+            if (korisnik.isBlocked()) {
+                throw new UserBlockedException();
             }
         }
 
@@ -214,6 +221,11 @@ public class KorisnikServiceImpl implements KorisnikService {
             return korisnik;
         }
         return null;
+    }
+
+    @Override
+    public void saveKorisnik(Korisnik korisnik) {
+        korisnikRepository.save(korisnik);
     }
 
     @Override
@@ -267,7 +279,7 @@ public class KorisnikServiceImpl implements KorisnikService {
         korisnik.setStatus(Status.PENDING);
         korisnikRepository.save(korisnik);
 
-        String aktivacijskiLink = aktivacijaService.generisiAktivacioniLink(korisnikId);
+        String aktivacijskiLink = registerService.generisiAktivacioniLink(korisnikId);
         posaljiAktivacijskiEmail(Optional.of(korisnik), aktivacijskiLink);
     }
 
@@ -317,7 +329,7 @@ public class KorisnikServiceImpl implements KorisnikService {
     @Override
     public boolean proveriAktivacijskiLink(Long korisnikId, String timestamp, String hmac) {
         String podaci = korisnikId + ":" + timestamp;
-        String generisaniHmac = aktivacijaService.generisiHmac(podaci);
+        String generisaniHmac = registerService.generisiHmac(podaci);
 
         return hmac.equals(generisaniHmac);
     }
@@ -335,6 +347,58 @@ public class KorisnikServiceImpl implements KorisnikService {
 
         }
     }
+
+    @Override
+    public void editPassword(UpdatePasswordDto updatePasswordDto) {
+        Optional<Korisnik> oldKorisnikOptional = korisnikRepository.findByEmail(updatePasswordDto.getEmail());
+        if (oldKorisnikOptional.isEmpty()) {
+            return;
+        }
+
+        String updatedPassword = updatePasswordDto.getUpdatedPassword();
+        String confirmPassword = updatePasswordDto.getConfirmPassword();
+
+        if (!updatedPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Potvrda lozinke se ne podudara.");
+        }
+
+        if (updatedPassword.length() < 8 || !updatedPassword.matches(".*\\d.*") || !updatedPassword.matches(".*[^a-zA-Z0-9].*")) {
+            throw new IllegalArgumentException("Lozinka mora sadržati najmanje 8 karaktera, barem jedan broj i barem jedan specijalni znak.");
+        }
+
+        Korisnik oldKorisnik = oldKorisnikOptional.get();
+        oldKorisnik.setPassword(passwordEncoder.encode(updatePasswordDto.getUpdatedPassword()));
+        korisnikRepository.save(oldKorisnik);
+    }
+
+
+    @Override
+    public List<Korisnik> searchEngineers(String firstName, String lastName, String email) {
+        return  korisnikRepository.findByJobTitleAndFirstNameStartingWithOrJobTitleAndLastNameStartingWithOrJobTitleAndEmailStartingWith("INZENJER", firstName, "INZENJER", lastName, "INZENJER", email);
+    }
+
+    @Override
+    public void block(String email) {
+        Optional<Korisnik> oldKorisnikOptional = korisnikRepository.findByEmail(email);
+        if(oldKorisnikOptional.isEmpty()){
+            return;
+        }
+        Korisnik oldKorisnik = oldKorisnikOptional.get();
+        oldKorisnik.setBlocked(true);
+        korisnikRepository.save(oldKorisnik);
+    }
+
+    @Override
+    public void unblock(String email){
+        Optional<Korisnik> oldKorisnikOptional = korisnikRepository.findByEmail(email);
+        if(oldKorisnikOptional.isEmpty()){
+            return;
+        }
+        Korisnik oldKorisnik = oldKorisnikOptional.get();
+        oldKorisnik.setBlocked(false);
+        korisnikRepository.save(oldKorisnik);
+    }
+
 
 
 

@@ -1,5 +1,7 @@
 package com.main.app.controller;
 
+import com.main.app.UserBlockedException;
+import com.main.app.domain.dto.UpdatePasswordDto;
 import com.main.app.service.AktivacijaService;
 import com.main.app.domain.dto.KorisnikDto;
 import com.main.app.domain.model.HmacUtil;
@@ -12,6 +14,7 @@ import com.main.app.domain.tokens.TokenResponse;
 import com.main.app.repository.KorisnikRepository;
 import com.main.app.service.KorisnikService;
 
+import com.main.app.service.RegisterService;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.hibernate.id.GUIDGenerator;
 
@@ -22,7 +25,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
+
 
 @RestController
 @RequestMapping("/korisnik")
@@ -37,10 +45,18 @@ public class KorisnikController {
     private AktivacijaService activationService;
 
     @Autowired
+    private RegisterService registerService;
+
+    @Autowired
     public KorisnikController(KorisnikService korisnikService,KorisnikRepository korisnikRepository,TokenProvider tokenProvider) {
         this.korisnikService = korisnikService;
         this.korisnikRepository=korisnikRepository;
         this.tokenProvider=tokenProvider;
+    }
+
+    private String generateResetCode() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
     }
 
     @GetMapping(value = "/getAll")
@@ -69,7 +85,7 @@ public class KorisnikController {
     }
 
 
-    @PostMapping("/login")
+    /*@PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
         TokenResponse tokenResponse = korisnikService.loginAndGetTokens(loginRequest);
 
@@ -78,7 +94,25 @@ public class KorisnikController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+    }*/
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            TokenResponse tokenResponse = korisnikService.loginAndGetTokens(loginRequest);
+
+            if (tokenResponse != null) {
+                return ResponseEntity.ok(tokenResponse);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (UserBlockedException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
+
 
     @PostMapping("/loginemail")
     public ResponseEntity<TokenResponse> loginEmail(@RequestBody LoginRequest loginRequest) {
@@ -91,7 +125,7 @@ public class KorisnikController {
         LoginWithEmail emailLog = LoginWithEmail.builder()
                 .token(UUID.randomUUID())
                 .expirationDate(expdate)
-                .isUsed(false) // Set it to false initially
+                .isUsed(false)
                 .build();
 
         Korisnik k= korisnikService.getKorisnikByEmail(email);
@@ -102,11 +136,47 @@ public class KorisnikController {
 
         // Generate the HMAC for the token and registerUserInfoId
         String hmac = HmacUtil.generateHmac(emailLog.getToken().toString() + email, "special-special-secret-key");
+        String modifiedHmac = hmac.replace("+", "-");
 
-        String activationLink = "http://localhost:3000/activate/?token="+ hmac + "&email=" + email;
+        String encodedToken = URLEncoder.encode(emailLog.getToken().toString(), StandardCharsets.UTF_8);
+
+        String activationLink = "http://localhost:3000/activate/?token="+ modifiedHmac + "&email=" + email;
         korisnikService.posaljiLoginEmail(kk,  "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/repair")
+    public ResponseEntity<TokenResponse> repairAcc(@RequestBody LoginRequest loginRequest) {
+        Calendar calendar = Calendar.getInstance();
+        Date now = calendar.getTime();
+        String email=loginRequest.getEmail();
+        // Add 10 minutes
+        calendar.add(Calendar.MINUTE, 10);
+        Date expdate = calendar.getTime();
+        LoginWithEmail emailLog = LoginWithEmail.builder()
+                .token(UUID.randomUUID())
+                .expirationDate(expdate)
+                .isUsed(false)
+                .build();
+
+        Korisnik k= korisnikService.getKorisnikByEmail(email);
+
+        Korisnik kk=korisnikService.findById(k.getId());
+        kk.setEmailLogin(emailLog);
+        korisnikRepository.save(kk);
+
+        // Generate the HMAC for the token and registerUserInfoId
+        String hmac = HmacUtil.generateHmac(emailLog.getToken().toString() + email, "special-special-secret-key");
+        String modifiedHmac = hmac.replace("+", "-");
+
+        String encodedToken = URLEncoder.encode(emailLog.getToken().toString(), StandardCharsets.UTF_8);
+
+        String activationLink = "http://localhost:3000/repair/?token="+ modifiedHmac + "&email=" + email;
+        korisnikService.posaljiLoginEmail(kk,  "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
 
     @GetMapping("/emailActivate")
     public ResponseEntity emailLoginAct(@RequestParam("token") String token, @RequestParam("email") String email) {
@@ -146,6 +216,8 @@ public class KorisnikController {
 
         return ResponseEntity.badRequest().body("Invalid activation link.");
     }
+
+
 
     @GetMapping("/getUserNameAndSurname/{userId}")
     public String getUserNameAndSurname(@PathVariable Long userId) {
@@ -209,7 +281,7 @@ public class KorisnikController {
         Korisnik korisnik = korisnikService.getKorisnikById(korisnikId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen."));
         korisnikService.prihvatiKorisnika(korisnikId);
 
-        String aktivacijskiLink = activationService.generisiAktivacioniLink(korisnikId);
+        String aktivacijskiLink = registerService.generisiAktivacioniLink(korisnikId);
         korisnikService.posaljiAktivacijskiEmail(Optional.of(korisnik), aktivacijskiLink);
 
         return ResponseEntity.ok().build();
@@ -253,6 +325,54 @@ public class KorisnikController {
         }
     }
 
+    @PutMapping("/edit-password")
+    public ResponseEntity editPassword(@RequestBody UpdatePasswordDto updatePasswordDto) {
+        korisnikService.editPassword(updatePasswordDto);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+
+    @GetMapping("/{search}")
+    public List<Korisnik> searchUsers(@PathVariable String search) {
+        return korisnikService.searchEngineers( search,  search, search);
+    }
+
+    @PutMapping("/block/{email}")
+    public ResponseEntity block(@PathVariable("email") String email) {
+        korisnikService.block(email);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping("/unblock/{email}")
+    public ResponseEntity unblock(@PathVariable("email") String email) {
+        korisnikService.unblock(email);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-sifre")
+    public ResponseEntity<String> resetujSifru(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String kod = request.get("kod");
+        String novaSifra = request.get("novaSifra");
+
+        boolean uspesnoResetovanje = activationService.resetujSifru(email, kod, novaSifra);
+
+        if (uspesnoResetovanje) {
+            return ResponseEntity.ok("Šifra je uspešno resetovana.");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Došlo je do greške prilikom resetovanja šifre.");
+        }
+    }
+
+
+    @PostMapping("/send-code")
+    public ResponseEntity<String> poslatiKodZaResetovanje(@RequestParam String email) {
+        String kod = generateResetCode();
+
+        activationService.posaljiKodZaResetovanje(email, kod);
+
+        return ResponseEntity.ok("Kod za resetovanje šifre je poslat na mejl.");
+    }
 
 
 }

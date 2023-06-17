@@ -42,17 +42,18 @@ CREATE TABLE `korisnik` (
     `state` varchar(255) NOT NULL,
     `phone_number` varchar(255) NOT NULL,
     `job_title` varchar(255) NOT NULL,
-     `status` varchar(255) NOT NULL,
+    `status` varchar(255) NOT NULL,
+    `blocked` BOOLEAN DEFAULT FALSE,
      token BINARY(16),
      expiration_date DATETIME,
      is_used TINYINT(1),
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `status`, `token`, `expiration_date`, `is_used` ) VALUES
+INSERT INTO `korisnik` (`id`, `email`, `password`, `first_name`, `last_name`, `address`, `city`, `state`, `phone_number`, `job_title`, `status`, `blocked`, `token`, `expiration_date`, `is_used` ) VALUES
 
     ('1', 'admin@gmail.com', '123', 'Admin', 'Admin', 'Admin', 'Admin', 'fesef','111',
-     'ADMIN', 'APPROVED', X'0123456789ABCDEF0123456789ABCDEF', '2023-05-31 12:00:00', 1);
+     'ADMIN', 'APPROVED', 0, X'0123456789ABCDEF0123456789ABCDEF', '2023-05-31 12:00:00', 1);
 
 CREATE TABLE `projekat` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,

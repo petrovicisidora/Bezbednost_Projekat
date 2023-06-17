@@ -62,10 +62,15 @@ public class Korisnik implements Serializable {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean blocked;
+
     @Embedded
     private LoginWithEmail emailLogin;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return  null;
     }
+
+
 }
