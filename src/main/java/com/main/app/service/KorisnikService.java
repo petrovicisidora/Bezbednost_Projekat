@@ -53,6 +53,8 @@ public interface KorisnikService {
 
     void editPassword(UpdatePasswordDto updatePasswordDto);
 
+    List<Korisnik> getAdminKorisnici();
+
     List<Korisnik> searchEngineers(String firstName, String lastName, String email);
 
     void block(String email);

@@ -22,4 +22,5 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Long> {
     List<Korisnik> findByJobTitleAndFirstNameStartingWithOrJobTitleAndLastNameStartingWithOrJobTitleAndEmailStartingWith(String jobTitle, String firstName, String jobTitle2, String lastName, String jobTitle3, String email);
 
 
+    List<Korisnik> findByJobTitle(String admin);
 }

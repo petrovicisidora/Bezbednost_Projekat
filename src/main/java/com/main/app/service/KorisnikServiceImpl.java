@@ -371,6 +371,12 @@ public class KorisnikServiceImpl implements KorisnikService {
         korisnikRepository.save(oldKorisnik);
     }
 
+    @Override
+    public List<Korisnik> getAdminKorisnici() {
+        return korisnikRepository.findByJobTitle("ADMIN");
+    }
+
+
 
     @Override
     public List<Korisnik> searchEngineers(String firstName, String lastName, String email) {

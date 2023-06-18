@@ -157,6 +157,19 @@ public class KorisnikController {
                 notification.setTime(currentTime);
                 notificationRepository.save(notification);
 
+                if (notification.getCritical()) {
+                    // Dohvati sve admin korisnike iz baze podataka
+                    List<Korisnik> adminKorisnici = korisnikService.getAdminKorisnici();
+
+                    // Posalji mejl svakom admin korisniku
+                    for (Korisnik admin : adminKorisnici) {
+                        String subject = "Upozorenje: Sigurnosni napad!";
+                        String message = "Vaš nalog je podložan sigurnosnom napadu! Molimo preduzmite potrebne mere.";
+
+                        activationService.posaljiMejlZaNotifikaciju(admin.getEmail(), subject, message);
+                    }
+                }
+
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         } catch (UserBlockedException e) {
@@ -189,6 +202,8 @@ public class KorisnikController {
             notification.setIsRead(false);
             notification.setTime(currentTime);
             notificationRepository.save(notification);
+
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
@@ -197,9 +212,16 @@ public class KorisnikController {
 
     @PostMapping("/loginemail")
     public ResponseEntity<TokenResponse> loginEmail(@RequestBody LoginRequest loginRequest) {
+        try{
             Calendar calendar = Calendar.getInstance();
             Date now = calendar.getTime();
             String email = loginRequest.getEmail();
+
+            Korisnik korisnik = korisnikService.getKorisnikByEmail(email);
+            if (korisnik.isBlocked()) {
+                throw new UserBlockedException();
+            }
+
             // Add 10 minutes
             calendar.add(Calendar.MINUTE, 10);
             Date expdate = calendar.getTime();
@@ -224,6 +246,9 @@ public class KorisnikController {
             String activationLink = "http://localhost:3000/activate/?token=" + modifiedHmac + "&email=" + email;
             korisnikService.posaljiLoginEmail(kk, "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
             return new ResponseEntity<>(HttpStatus.OK);
+    } catch (UserBlockedException e) {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
     }
 
     @PostMapping("/repair")

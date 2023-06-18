@@ -105,6 +105,20 @@ public class AktivacijaService {
         }
     }
 
+    public void posaljiMejlZaNotifikaciju(String email, String subject, String message) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(email);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(message);
+
+        try {
+            mailSender.send(mailMessage);
+            System.out.println("Mejl poslat na: " + email);
+        } catch (MailException e) {
+            System.out.println("Greška prilikom slanja e-pošte: " + e.getMessage());
+        }
+    }
+
 
 
 
