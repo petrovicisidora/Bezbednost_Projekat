@@ -21,9 +21,16 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,25 +65,40 @@ public class KorisnikServiceImpl implements KorisnikService {
 
     @Override
     public List<Korisnik> getAllKorisnici() {
-        return korisnikRepository.findAll();
+        List<Korisnik> korisnici= korisnikRepository.findAll();
+        for (Korisnik korisnik : korisnici) {
+            korisnik.decryptAddress();
+            korisnik.decryptPhoneNumber();
+        }
+
+        return korisnici;
     }
 
     @Override
-    public Korisnik editKorisnik(String email, KorisnikDto korisnikDto) {
+    public Korisnik editKorisnik(String email, KorisnikDto korisnikDto) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         Optional<Korisnik> korisnikOptional = korisnikRepository.findByEmail(email);
         if (korisnikOptional.isEmpty()) {
             throw new RuntimeException("Korisnik sa datim ID-em ne postoji.");
         }
 
         Korisnik korisnik = korisnikOptional.get();
+        EncryptionService encryptionService = new EncryptionService();
+
+        SecretKey secretKey = encryptionService.generateSecretKey();
+        String generatedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        System.out.println("Generated Key: " + generatedKey);
+        // Enkripcija polja address
+        String encryptedAddress = encryptionService.encrypt(korisnikDto.getAddress(),secretKey);
+        String encryptedPhoneNumber = encryptionService.encrypt(korisnikDto.getPhoneNumber(),secretKey);
+
 
         // email i sifra se ne menjaju
         korisnik.setFirstName(korisnikDto.getFirstName());
         korisnik.setLastName(korisnikDto.getLastName());
-        korisnik.setAddress(korisnikDto.getAddress());
+        korisnik.setAddress(encryptedAddress);
         korisnik.setCity(korisnikDto.getCity());
         korisnik.setState(korisnikDto.getState());
-        korisnik.setPhoneNumber(korisnikDto.getPhoneNumber());
+        korisnik.setPhoneNumber(encryptedPhoneNumber);
         korisnik.setJobTitle(korisnikDto.getJobTitle());
 
         // Čuvanje izmenjenog korisnika u bazi
@@ -136,12 +158,21 @@ public class KorisnikServiceImpl implements KorisnikService {
     }
 
     @Override
-    public Korisnik registerKorisnik(KorisnikDto korisnikDto) {
+    public Korisnik registerKorisnik(KorisnikDto korisnikDto) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         Optional<Korisnik> existingUser = korisnikRepository.findByEmail(korisnikDto.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("Korisnik sa datom email adresom već postoji.");
         }
         String sifra = passwordEncoder.encode(korisnikDto.getPassword());
+
+        EncryptionService encryptionService = new EncryptionService();
+
+        SecretKey secretKey = encryptionService.generateSecretKey();
+        String generatedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        System.out.println("Generated Key: " + generatedKey);
+        // Enkripcija polja address
+        String encryptedAddress = encryptionService.encrypt(korisnikDto.getAddress(),secretKey);
+        String encryptedPhoneNumber = encryptionService.encrypt(korisnikDto.getPhoneNumber(),secretKey);
 
         // kreiranje novog korisnika
         Korisnik korisnik = new Korisnik();
@@ -149,10 +180,10 @@ public class KorisnikServiceImpl implements KorisnikService {
         korisnik.setPassword(sifra);
         korisnik.setFirstName(korisnikDto.getFirstName());
         korisnik.setLastName(korisnikDto.getLastName());
-        korisnik.setAddress(korisnikDto.getAddress());
+        korisnik.setAddress(encryptedAddress);
         korisnik.setCity(korisnikDto.getCity());
         korisnik.setState(korisnikDto.getState());
-        korisnik.setPhoneNumber(korisnikDto.getPhoneNumber());
+        korisnik.setPhoneNumber(encryptedPhoneNumber);
         korisnik.setJobTitle(korisnikDto.getJobTitle());
         korisnik.setStatus(Status.PENDING);
 

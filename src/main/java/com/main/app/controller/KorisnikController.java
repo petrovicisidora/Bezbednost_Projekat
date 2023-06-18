@@ -26,9 +26,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -75,7 +80,7 @@ public class KorisnikController {
     }
 
     @PutMapping("/edit/{email}")
-    public ResponseEntity<Korisnik> editKorisnik(@PathVariable("email") String email, @RequestBody KorisnikDto korisnikDto) {
+    public ResponseEntity<Korisnik> editKorisnik(@PathVariable("email") String email, @RequestBody KorisnikDto korisnikDto) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         Korisnik editedKorisnik = korisnikService.editKorisnik(email, korisnikDto);
         return ResponseEntity.ok(editedKorisnik);
     }
@@ -352,6 +357,8 @@ public class KorisnikController {
        Korisnik korisnik = korisnikService.getKorisnikByEmail(email);
 
         if(korisnik!=null){
+            korisnik.decryptAddress();
+            korisnik.decryptPhoneNumber();
             return ResponseEntity.ok(korisnik);
         } else {
             return ResponseEntity.notFound().build();
