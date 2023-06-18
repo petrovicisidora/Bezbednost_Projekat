@@ -32,4 +32,9 @@ public class Notification {
 
     @Column(name = "critical")
     private Boolean critical;
+
+    @Column(name = "is_read")
+    private Boolean isRead;
+
+
 }

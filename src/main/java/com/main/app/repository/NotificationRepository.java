@@ -11,4 +11,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Notification findByEmail(String email);
 
     List<Notification> findByCriticalTrue();
+
+    List<Notification> findByCriticalTrueAndIsReadFalse();
 }

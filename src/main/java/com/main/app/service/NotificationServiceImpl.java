@@ -27,7 +27,14 @@ public class NotificationServiceImpl implements NotificationService{
     }
 
     @Override
+    public void readNotification(Long notificationId){
+        Notification notification = notificationRepository.findById(notificationId).get();
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
+    }
+
+    @Override
     public List<Notification> getCriticalNotifications(){
-        return notificationRepository.findByCriticalTrue();
+        return notificationRepository.findByCriticalTrueAndIsReadFalse();
     }
 }

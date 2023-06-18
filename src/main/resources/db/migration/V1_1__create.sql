@@ -133,7 +133,7 @@ CREATE TABLE `notification` (
                                         `time` datetime NOT NULL,
                                         `count` int NOT NULL,
                                         `critical` BOOLEAN DEFAULT FALSE,
-
+                                        `is_read` BOOLEAN DEFAULT FALSE,
                                         PRIMARY KEY (`id`)
 );
 

@@ -83,14 +83,25 @@ public class KorisnikController {
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registerKorisnik(@RequestBody KorisnikDto korisnikDto) {
-        Korisnik korisnik = korisnikService.registerKorisnik(korisnikDto);
-        return ResponseEntity.ok(korisnik);
+         try {
+             Korisnik korisnik = korisnikService.registerKorisnik(korisnikDto);
+             return ResponseEntity.ok(korisnik);
+         } catch(Exception e){
+             log.error("Error registering user!");
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+         }
     }
 
     @PostMapping(value = "/registerAdmin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registerAdmin(@RequestBody KorisnikDto korisnikDto) {
-        Korisnik korisnik = korisnikService.registerAdmin(korisnikDto);
-        return ResponseEntity.ok(korisnik);
+        try {
+            Korisnik korisnik = korisnikService.registerAdmin(korisnikDto);
+            log.info("Admin successfully registered!");
+            return ResponseEntity.ok(korisnik);
+        } catch (Exception e) {
+            log.error("Error registering admin");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error registering admin");
+        }
     }
 
 
@@ -126,20 +137,23 @@ public class KorisnikController {
                     if (lastNotificationTime.isBefore(currentTime.minusMinutes(5))) {
                         notification.setCount(1);
                         notification.setCritical(false);
+                        notification.setMessage("Security Attack! Bad Credentials!");
                     } else {
                         notification.setCount(notification.getCount() + 1);
                         if (notification.getCount() > 2) {
                             notification.setCritical(true);
+                            notification.setMessage("Security Attack! Bad Credentials!");
                         }
                     }
                 } else {
                     notification = new Notification();
                     notification.setEmail(loginRequest.getEmail());
                     notification.setCount(1);
-                    notification.setMessage("Security Attack!");
+                    notification.setMessage("Security Attack! Bad Credentials!");
                     notification.setCritical(false);
                 }
 
+                notification.setIsRead(false);
                 notification.setTime(currentTime);
                 notificationRepository.save(notification);
 
@@ -148,6 +162,33 @@ public class KorisnikController {
         } catch (UserBlockedException e) {
             System.out.println(e.getMessage());
             log.error("Blokirani korisnik pokusava da se prijavi: {}", loginRequest.getEmail());
+            Notification notification = notificationRepository.findByEmail(loginRequest.getEmail());
+            LocalDateTime currentTime = LocalDateTime.now();
+
+            if (notification != null) {
+                LocalDateTime lastNotificationTime = notification.getTime();
+                if (lastNotificationTime.isBefore(currentTime.minusMinutes(5))) {
+                    notification.setCount(1);
+                    notification.setCritical(false);
+                    notification.setMessage("Security Attack! Blocked User!");
+                } else {
+                    notification.setCount(notification.getCount() + 1);
+                    if (notification.getCount() > 2) {
+                        notification.setCritical(true);
+                        notification.setMessage("Security Attack! Blocked User!");
+                    }
+                }
+            } else {
+                notification = new Notification();
+                notification.setEmail(loginRequest.getEmail());
+                notification.setCount(1);
+                notification.setMessage("Security Attack! Blocked User!");
+                notification.setCritical(false);
+            }
+
+            notification.setIsRead(false);
+            notification.setTime(currentTime);
+            notificationRepository.save(notification);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
@@ -156,33 +197,33 @@ public class KorisnikController {
 
     @PostMapping("/loginemail")
     public ResponseEntity<TokenResponse> loginEmail(@RequestBody LoginRequest loginRequest) {
-        Calendar calendar = Calendar.getInstance();
-        Date now = calendar.getTime();
-        String email=loginRequest.getEmail();
-        // Add 10 minutes
-        calendar.add(Calendar.MINUTE, 10);
-        Date expdate = calendar.getTime();
-        LoginWithEmail emailLog = LoginWithEmail.builder()
-                .token(UUID.randomUUID())
-                .expirationDate(expdate)
-                .isUsed(false)
-                .build();
+            Calendar calendar = Calendar.getInstance();
+            Date now = calendar.getTime();
+            String email = loginRequest.getEmail();
+            // Add 10 minutes
+            calendar.add(Calendar.MINUTE, 10);
+            Date expdate = calendar.getTime();
+            LoginWithEmail emailLog = LoginWithEmail.builder()
+                    .token(UUID.randomUUID())
+                    .expirationDate(expdate)
+                    .isUsed(false)
+                    .build();
 
-        Korisnik k= korisnikService.getKorisnikByEmail(email);
+            Korisnik k = korisnikService.getKorisnikByEmail(email);
 
-        Korisnik kk=korisnikService.findById(k.getId());
-        kk.setEmailLogin(emailLog);
-        korisnikRepository.save(kk);
+            Korisnik kk = korisnikService.findById(k.getId());
+            kk.setEmailLogin(emailLog);
+            korisnikRepository.save(kk);
 
-        // Generate the HMAC for the token and registerUserInfoId
-        String hmac = HmacUtil.generateHmac(emailLog.getToken().toString() + email, "special-special-secret-key");
-        String modifiedHmac = hmac.replace("+", "-");
+            // Generate the HMAC for the token and registerUserInfoId
+            String hmac = HmacUtil.generateHmac(emailLog.getToken().toString() + email, "special-special-secret-key");
+            String modifiedHmac = hmac.replace("+", "-");
 
-        String encodedToken = URLEncoder.encode(emailLog.getToken().toString(), StandardCharsets.UTF_8);
+            String encodedToken = URLEncoder.encode(emailLog.getToken().toString(), StandardCharsets.UTF_8);
 
-        String activationLink = "http://localhost:3000/activate/?token="+ modifiedHmac + "&email=" + email;
-        korisnikService.posaljiLoginEmail(kk,  "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
-        return new ResponseEntity<>(HttpStatus.OK);
+            String activationLink = "http://localhost:3000/activate/?token=" + modifiedHmac + "&email=" + email;
+            korisnikService.posaljiLoginEmail(kk, "Poslali ste zahtev za login putem emaila, kliknite na link: " + activationLink);
+            return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/repair")
@@ -249,11 +290,11 @@ public class KorisnikController {
                     String refreshToken = tokenProvider.generateRefreshToken(korisnik);
 
 
-
+                log.info("Successful login with email!");
                 return new ResponseEntity<>(new TokenResponse(accessToken, refreshToken), HttpStatus.OK);
             }
 
-
+        log.error("Error login with email!");
         return ResponseEntity.badRequest().body("Invalid activation link.");
     }
 
@@ -318,20 +359,31 @@ public class KorisnikController {
 
     @PostMapping("accept/{korisnikId}")
     public ResponseEntity<?> prihvatiKorisnika(@PathVariable Long korisnikId) {
-        Korisnik korisnik = korisnikService.getKorisnikById(korisnikId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen."));
-        korisnikService.prihvatiKorisnika(korisnikId);
+        try {
+            Korisnik korisnik = korisnikService.getKorisnikById(korisnikId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen."));
+            korisnikService.prihvatiKorisnika(korisnikId);
 
-        String aktivacijskiLink = registerService.generisiAktivacioniLink(korisnikId);
-        korisnikService.posaljiAktivacijskiEmail(Optional.of(korisnik), aktivacijskiLink);
-
-        return ResponseEntity.ok().build();
+            String aktivacijskiLink = registerService.generisiAktivacioniLink(korisnikId);
+            korisnikService.posaljiAktivacijskiEmail(Optional.of(korisnik), aktivacijskiLink);
+            log.info("Successfully accepted user!");
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            log.error("Error accepting user registration!");
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 
     @PostMapping("/reject/{korisnikId}")
     public ResponseEntity<?> odbijKorisnika(@PathVariable Long korisnikId, @RequestBody String razlogOdbijanja) {
-        korisnikService.odbijKorisnika(korisnikId, razlogOdbijanja);
-        return ResponseEntity.ok().build();
+        try {
+            korisnikService.odbijKorisnika(korisnikId, razlogOdbijanja);
+            log.info("Successfully rejected user!");
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            log.error("Error rejecting user!");
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/{korisnikId}/aktivacija")
@@ -367,8 +419,14 @@ public class KorisnikController {
 
     @PutMapping("/edit-password")
     public ResponseEntity editPassword(@RequestBody UpdatePasswordDto updatePasswordDto) {
-        korisnikService.editPassword(updatePasswordDto);
-        return new ResponseEntity(HttpStatus.OK);
+         try {
+             korisnikService.editPassword(updatePasswordDto);
+             log.info("Successfully changed password!");
+             return new ResponseEntity(HttpStatus.OK);
+         } catch (Exception e){
+             log.error("Error changing password!");
+             return new ResponseEntity(HttpStatus.BAD_REQUEST);
+         }
     }
 
 
@@ -379,14 +437,26 @@ public class KorisnikController {
 
     @PutMapping("/block/{email}")
     public ResponseEntity block(@PathVariable("email") String email) {
-        korisnikService.block(email);
-        return new ResponseEntity(HttpStatus.OK);
+       try {
+           korisnikService.block(email);
+           log.info("Successfully blocked user!");
+           return new ResponseEntity(HttpStatus.OK);
+       }catch (Exception e){
+           log.error("Error blocking user!");
+           return new ResponseEntity(HttpStatus.BAD_REQUEST);
+       }
     }
 
     @PutMapping("/unblock/{email}")
     public ResponseEntity unblock(@PathVariable("email") String email) {
-        korisnikService.unblock(email);
-        return new ResponseEntity(HttpStatus.OK);
+       try {
+           korisnikService.unblock(email);
+           log.info("Successfully unblocked user!");
+           return new ResponseEntity(HttpStatus.OK);
+       } catch (Exception e){
+           log.error("Error unblocking user!");
+           return new ResponseEntity(HttpStatus.BAD_REQUEST);
+       }
     }
 
     @PostMapping("/reset-sifre")
@@ -398,8 +468,10 @@ public class KorisnikController {
         boolean uspesnoResetovanje = activationService.resetujSifru(email, kod, novaSifra);
 
         if (uspesnoResetovanje) {
+            log.info("Successfully reseted password!");
             return ResponseEntity.ok("Šifra je uspešno resetovana.");
         } else {
+            log.error("Error reseting password!");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Došlo je do greške prilikom resetovanja šifre.");
         }
     }
